@@ -1,0 +1,28 @@
+import './utils/config'; // load .env first
+import { createBot } from './bot/createBot';
+import { logger } from './utils/logger';
+
+async function main() {
+  logger.info('Starting TalangIn bot...');
+
+  const bot = createBot();
+
+  // Graceful shutdown
+  process.once('SIGINT', () => {
+    logger.info('SIGINT received, stopping bot...');
+    bot.stop('SIGINT');
+  });
+  process.once('SIGTERM', () => {
+    logger.info('SIGTERM received, stopping bot...');
+    bot.stop('SIGTERM');
+  });
+
+  // Start polling
+  await bot.launch();
+  logger.info('Bot is running (long polling)');
+}
+
+main().catch((err) => {
+  logger.error(err, 'Fatal error during startup');
+  process.exit(1);
+});
