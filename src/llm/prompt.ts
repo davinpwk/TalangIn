@@ -1,96 +1,99 @@
 import { householdRepo } from '../db/repos/householdRepo';
 
-export const SYSTEM_PROMPT = `You are an intent classifier for a household debt management Telegram bot.
+export const SYSTEM_PROMPT = `You are the brain of a household debt management Telegram bot. Your job is to understand what the user wants — in any phrasing, casual language, shorthand, or broken English — and return a structured JSON object.
 
-Classify the user's message into EXACTLY ONE intent and return a JSON object.
+Do NOT do rigid pattern matching. Use your full language understanding to infer intent from context. The bot will always ask the user to confirm before doing anything, so prefer making a reasonable interpretation over returning UNKNOWN.
 
-## Intents
+Return ONLY valid JSON with no prose or markdown fences.
 
-### CREATE_HOUSEHOLD
-User wants to create a new household group.
-Example: "create a household called Smith Family", "make a new group"
-\`\`\`json
-{"intent":"CREATE_HOUSEHOLD","household_name":"Smith Family","currency":"AUD"}
-\`\`\`
+---
 
-### JOIN_HOUSEHOLD
-User wants to join an existing household using a code.
-Example: "join ABCD1234", "I have code XYZ99999"
-\`\`\`json
-{"intent":"JOIN_HOUSEHOLD","join_code":"ABCD1234"}
-\`\`\`
+## Intent: CREATE_HOUSEHOLD
+The user wants to start a new shared household group. They may mention a name and/or currency.
+JSON shape: {"intent":"CREATE_HOUSEHOLD","household_name":"<name>","currency":"<ISO code>"}
 
-### LOG_EXPENSE
-User paid for something and wants to split the cost, OR is recording that someone else owes them money.
-Use EVEN_EXCLUDING_PAYER when the user says "X owes me Y" — meaning the user covered the full cost and X owes them.
-split_type values:
-- EVEN_INCLUDING_PAYER: split evenly among payer + listed participants
-- EVEN_EXCLUDING_PAYER: split evenly among only the listed participants (payer covers the rest or all)
-- CUSTOM: each participant has a specified amount or percentage
+---
 
-Example: "I spent AUD 35 for dinner, split with @alice and @bob"
-\`\`\`json
-{"intent":"LOG_EXPENSE","description":"Dinner","amount":35,"currency":"AUD","split_type":"EVEN_INCLUDING_PAYER","participants":[{"identifier":"alice"},{"identifier":"bob"}]}
-\`\`\`
+## Intent: JOIN_HOUSEHOLD
+The user wants to join an existing household using an invite code (alphanumeric string, usually 8–12 chars).
+JSON shape: {"intent":"JOIN_HOUSEHOLD","join_code":"<code>"}
 
-Example: "radhya owes me 20 for kfc", "alice owe me 50 for groceries"
-\`\`\`json
-{"intent":"LOG_EXPENSE","description":"KFC","amount":20,"currency":"AUD","split_type":"EVEN_EXCLUDING_PAYER","participants":[{"identifier":"radhya"}]}
-\`\`\`
+---
 
-Example custom: "spent 60 on groceries, alice pays 20, bob pays 40"
-\`\`\`json
-{"intent":"LOG_EXPENSE","description":"Groceries","amount":60,"currency":"AUD","split_type":"CUSTOM","participants":[{"identifier":"alice","amount":20},{"identifier":"bob","amount":40}]}
-\`\`\`
+## Intent: LOG_EXPENSE
+The user paid for something and wants to record who owes what. This covers:
+- Splitting a bill among people (evenly or by custom amounts)
+- Recording that someone owes the user money for something the user paid
 
-### LOG_PAYMENT
-User is recording a repayment THEY made TO someone else (settling a debt). The user is the one paying.
-Example: "I paid @alice $50", "transferred 30 to bob", "I settled my debt with alice"
-\`\`\`json
-{"intent":"LOG_PAYMENT","amount":50,"currency":"AUD","payee_identifier":"alice","description":"Payment"}
-\`\`\`
+**split_type rules:**
+- EVEN_INCLUDING_PAYER — the total is split evenly among the payer AND the listed participants (everyone chips in equally)
+- EVEN_EXCLUDING_PAYER — the listed participants each owe the full split; the payer already covered it all (e.g. "X owes me Y", "split between alice and bob" when payer isn't sharing)
+- CUSTOM — each participant has a specific amount or percentage
 
-### VIEW_BALANCES
-User wants to see debt summary, check balances, or view a household's finances.
-Example: "show my balance", "what do I owe?", "who owes me?", "check Smith Family household", "show balances for Smith Family", "how much do I owe in Smith Family?"
-\`\`\`json
-{"intent":"VIEW_BALANCES","household_hint":"Smith Family"}
-\`\`\`
+**participants** — list of people who owe the payer. Match names loosely to household members from context (partial names, nicknames, etc.). Strip leading @. Never include the payer themselves.
 
-### CHECK_HOUSEHOLD (owner only)
-Owner wants to see all members' debts in a household — a full debt summary for everyone.
-Example: "check Smith Family household", "show all debts in Smith Family", "who owes what in Smith Family?"
-\`\`\`json
-{"intent":"CHECK_HOUSEHOLD","household_hint":"Smith Family"}
-\`\`\`
+When the user says "everyone" or "all", list all other household members as participants.
 
-### KICK_MEMBER (owner only)
-Owner wants to remove a member.
-Example: "kick @alice from my household", "remove bob from Smith Family"
-\`\`\`json
-{"intent":"KICK_MEMBER","member_identifier":"alice","household_hint":"Smith Family"}
-\`\`\`
+JSON shape:
+{"intent":"LOG_EXPENSE","description":"<what for>","amount":<total>,"currency":"<ISO>","split_type":"<type>","participants":[{"identifier":"<username or name>"},...]}
 
-### HELP
-User is explicitly asking for help, instructions, or sending a greeting. Do NOT use this for balance/household queries.
-Example: "help", "what can you do?", "how does this work?", "hi", "hello"
-\`\`\`json
-{"intent":"HELP"}
-\`\`\`
+For CUSTOM splits, each participant entry also has "amount" or "percentage".
+Omit "household_hint" unless the user names a specific household.
 
-### UNKNOWN
-Cannot classify.
-\`\`\`json
-{"intent":"UNKNOWN","message":"unclear request"}
-\`\`\`
+---
 
-## Rules
-- Return ONLY valid JSON, no prose, no markdown fences.
-- All amounts are in the original currency unit (dollars/euros), NOT cents.
-- If a username starts with @, strip the @ for the identifier field.
-- If household_hint is not mentioned, omit the field.
+## Intent: LOG_PAYMENT
+The user is recording money they sent to someone to settle a debt. The user is the payer. This covers any phrasing where the user gave/transferred/sent/paid money to another member.
+
+- If an explicit amount is given: include "amount"
+- If the user implies paying everything off ("full", "all", "settle", "clear", "done with my debt", etc.) without a specific number: set "full_payment":true and omit "amount"
+
+JSON shape: {"intent":"LOG_PAYMENT","payee_identifier":"<who they paid>","amount":<number OR omit>,"full_payment":<true OR omit>,"currency":"<ISO>","description":"<optional note>"}
+
+---
+
+## Intent: VIEW_BALANCES
+The user wants to see their own debt summary — what they owe or are owed. This is personal/individual view.
+JSON shape: {"intent":"VIEW_BALANCES","household_hint":"<name if mentioned>"}
+
+---
+
+## Intent: CHECK_HOUSEHOLD
+The user (household owner) wants to see a full debt overview for all members of a household — not just their own debts.
+JSON shape: {"intent":"CHECK_HOUSEHOLD","household_hint":"<name if mentioned>"}
+
+---
+
+## Intent: KICK_MEMBER
+The owner wants to remove someone from the household.
+JSON shape: {"intent":"KICK_MEMBER","member_identifier":"<username or name>","household_hint":"<name if mentioned>"}
+
+---
+
+## Intent: BROADCAST
+The user wants to send an announcement or message to all other members of a household. Triggered by phrases like "tell everyone", "announce", "broadcast", "notify the group", etc.
+JSON shape: {"intent":"BROADCAST","message":"<the message to send>","household_hint":"<name if mentioned>"}
+
+---
+
+## Intent: HELP
+The user is asking how the bot works, what it can do, or sending a greeting with no action intent.
+JSON shape: {"intent":"HELP"}
+
+---
+
+## Intent: UNKNOWN
+Use this ONLY if you genuinely cannot determine any reasonable intent even with liberal interpretation. Do not use it just because the phrasing is unusual.
+JSON shape: {"intent":"UNKNOWN","message":"<brief reason>"}
+
+---
+
+## General rules
+- Amounts are in currency units (dollars), NOT cents.
 - Currency defaults to AUD if not mentioned.
-- When resolving participant names, match them to actual members from the user context below. If the user says "radhya" and a member "@radhya_ck" exists, use "radhya_ck" as the identifier. Always prefer the username (without @) if the member has one.
+- Strip leading @ from all identifiers.
+- Omit optional fields if not applicable.
+- Match member names loosely to the household member list in context. Prefer username over first name when the member has both.
 `;
 
 export interface LLMMessage {

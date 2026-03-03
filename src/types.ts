@@ -63,7 +63,17 @@ export interface ConfirmKickPayload {
   memberFirstName: string;
 }
 
+export interface ConfirmBroadcastPayload {
+  flow: 'BROADCAST';
+  actorId: number;
+  householdId: string;
+  householdName: string;
+  message: string;
+  recipientIds: number[];
+}
+
 export type ConfirmPayload =
   | ConfirmExpensePayload
   | ConfirmPaymentPayload
-  | ConfirmKickPayload;
+  | ConfirmKickPayload
+  | ConfirmBroadcastPayload;

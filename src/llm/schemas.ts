@@ -37,8 +37,10 @@ export const LogExpenseSchema = z.object({
 
 export const LogPaymentSchema = z.object({
   intent: z.literal('LOG_PAYMENT'),
-  /** Total amount paid in currency units */
-  amount: z.number().positive(),
+  /** Total amount paid in currency units. Omit when full_payment is true. */
+  amount: z.number().positive().optional(),
+  /** True when the user wants to pay off their entire outstanding balance to the payee */
+  full_payment: z.boolean().optional(),
   currency: currency,
   household_hint: z.string().optional(),
   /** Who received the payment (@username or name) */
@@ -62,6 +64,12 @@ export const CheckHouseholdSchema = z.object({
   household_hint: z.string().optional(),
 });
 
+export const BroadcastSchema = z.object({
+  intent: z.literal('BROADCAST'),
+  message: z.string().min(1),
+  household_hint: z.string().optional(),
+});
+
 export const HelpSchema = z.object({
   intent: z.literal('HELP'),
 });
@@ -79,6 +87,7 @@ export const IntentSchema = z.discriminatedUnion('intent', [
   ViewBalancesSchema,
   CheckHouseholdSchema,
   KickMemberSchema,
+  BroadcastSchema,
   HelpSchema,
   UnknownSchema,
 ]);
@@ -91,3 +100,4 @@ export type LogPaymentIntent = z.infer<typeof LogPaymentSchema>;
 export type ViewBalancesIntent = z.infer<typeof ViewBalancesSchema>;
 export type KickMemberIntent = z.infer<typeof KickMemberSchema>;
 export type CheckHouseholdIntent = z.infer<typeof CheckHouseholdSchema>;
+export type BroadcastIntent = z.infer<typeof BroadcastSchema>;

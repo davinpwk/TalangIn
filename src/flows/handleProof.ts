@@ -6,6 +6,7 @@ import { classifyIntent } from '../llm/provider';
 import { buildMessages } from '../llm/prompt';
 import * as logExpenseFlow from './logExpense';
 import * as logPaymentFlow from './logPayment';
+import { t, getLang } from '../i18n';
 import type { ProofInfo } from '../types';
 import type { LogExpenseIntent, LogPaymentIntent } from '../llm/schemas';
 
@@ -16,6 +17,7 @@ export async function handleAttachment(
   bot: Telegraf
 ): Promise<void> {
   const telegramId = ctx.from!.id;
+  const lang = getLang(ctx);
 
   // 1. Is there a pending AWAITING_PROOF state for this user?
   const pending = await pendingActionRepo.getActive(telegramId);
@@ -60,19 +62,11 @@ export async function handleAttachment(
     } else if (intent.intent === 'LOG_PAYMENT') {
       await logPaymentFlow.handle(ctx, intent, proof);
     } else {
-      await ctx.reply(
-        "I received your file but couldn't determine its purpose from the caption. Please describe the expense or payment in your next message."
-      );
+      await ctx.reply(t(lang, 'attachmentNoCaption'));
     }
     return;
   }
 
   // 3. No pending state, no caption
-  await ctx.reply(
-    "I received your file, but I'm not sure what to do with it.\n\n" +
-      'If this is a receipt, please send it with a caption like:\n' +
-      '_"Dinner AUD 35, split with @alice and @bob"_\n\n' +
-      'Or send a text message first, then the proof.',
-    { parse_mode: 'Markdown' }
-  );
+  await ctx.reply(t(lang, 'attachmentUnknown'), { parse_mode: 'Markdown' });
 }

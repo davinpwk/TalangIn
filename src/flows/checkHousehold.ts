@@ -2,15 +2,17 @@ import { Context } from 'telegraf';
 import { householdRepo } from '../db/repos/householdRepo';
 import { debtRepo } from '../db/repos/debtRepo';
 import { formatMoney, escapeMd } from '../domain/money';
+import { t, getLang } from '../i18n';
 import type { CheckHouseholdIntent } from '../llm/schemas';
 
 export async function handle(ctx: Context, intent: CheckHouseholdIntent): Promise<void> {
   const telegramId = ctx.from!.id;
+  const lang = getLang(ctx);
   const households = await householdRepo.getActiveHouseholdsForUser(telegramId);
 
   const owned = households.filter((h) => h.owner_telegram_id === telegramId);
   if (owned.length === 0) {
-    await ctx.reply('Only household owners can use this command.');
+    await ctx.reply(t(lang, 'notOwner'));
     return;
   }
 
@@ -25,7 +27,6 @@ export async function handle(ctx: Context, intent: CheckHouseholdIntent): Promis
   const debts = await debtRepo.getAllDebtsInHousehold(target.id);
   const currency = target.currency_default;
 
-  // Group debts by debtor
   const byDebtor = new Map<number, typeof debts>();
   for (const d of debts) {
     if (!byDebtor.has(d.debtor_telegram_id)) byDebtor.set(d.debtor_telegram_id, []);
@@ -33,14 +34,14 @@ export async function handle(ctx: Context, intent: CheckHouseholdIntent): Promis
   }
 
   const householdName = escapeMd(target.name);
-  let text = `📋 *Household Summary — ${householdName}*\n\n`;
+  let text = t(lang, 'householdSummary', { householdName });
 
   for (const member of members) {
     const memberDebts = byDebtor.get(member.telegram_id) ?? [];
     const name = escapeMd(member.username ? `@${member.username}` : member.first_name);
 
     if (memberDebts.length === 0) {
-      text += `${name} — ✅ settled up\n`;
+      text += `${name} — ${t(lang, 'settledUp')}\n`;
     } else {
       text += `${name} owes:\n`;
       for (const d of memberDebts) {

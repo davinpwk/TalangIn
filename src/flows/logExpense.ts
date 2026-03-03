@@ -10,6 +10,7 @@ import { householdSelectionKeyboard } from '../bot/keyboards/householdKeyboard';
 import { splitEvenly, splitByAmounts, splitByPercentages } from '../domain/splits';
 import { toCents, formatMoney, escapeMd } from '../domain/money';
 import { notifyUser } from '../utils/notify';
+import { t, getLang } from '../i18n';
 import type { LogExpenseIntent } from '../llm/schemas';
 import type { ProofInfo, SplitEntry, ConfirmExpensePayload } from '../types';
 
@@ -20,15 +21,16 @@ export async function handle(
   householdId?: string
 ): Promise<void> {
   const telegramId = ctx.from!.id;
+  const lang = getLang(ctx);
 
   // 1. Resolve household
-  const hId = householdId ?? (await resolveHousehold(ctx, telegramId, intent, proof));
-  if (!hId) return; // asked user to select
+  const hId = householdId ?? (await resolveHousehold(ctx, telegramId, intent, proof, lang));
+  if (!hId) return;
 
   // 2. Verify membership
   const membership = await householdRepo.getMembership(hId, telegramId);
   if (!membership || membership.status !== 'ACTIVE') {
-    await ctx.reply('You are not an active member of that household.');
+    await ctx.reply(t(lang, 'notActiveMember'));
     return;
   }
 
@@ -41,12 +43,16 @@ export async function handle(
   const otherMembers = allMembers.filter((m) => m.telegram_id !== telegramId);
   const payer = allMembers.find((m) => m.telegram_id === telegramId)!;
 
-  const resolvedParticipants = await resolveParticipants(
-    ctx,
-    intent.participants,
-    otherMembers
-  );
-  if (!resolvedParticipants) return; // couldn't resolve
+  const participantsWithoutPayer = intent.participants.filter((p) => {
+    const ident = p.identifier.replace(/^@/, '').toLowerCase();
+    return (
+      payer.username?.toLowerCase() !== ident &&
+      payer.first_name.toLowerCase() !== ident
+    );
+  });
+
+  const resolvedParticipants = await resolveParticipants(ctx, participantsWithoutPayer, otherMembers, lang);
+  if (!resolvedParticipants) return;
 
   // 4. Calculate splits
   const totalCents = toCents(intent.amount);
@@ -55,7 +61,7 @@ export async function handle(
   try {
     splits = calcSplits(intent, totalCents, resolvedParticipants, payer);
   } catch (e: unknown) {
-    await ctx.reply(`Split error: ${(e as Error).message}`);
+    await ctx.reply(t(lang, 'splitError', { message: (e as Error).message }));
     return;
   }
 
@@ -66,10 +72,7 @@ export async function handle(
       data: intent,
       householdId: hId,
     });
-    await ctx.reply(
-      '🧾 Got it! Please send your *invoice or receipt* as a photo or document.',
-      { parse_mode: 'Markdown' }
-    );
+    await ctx.reply(t(lang, 'awaitingProof'), { parse_mode: 'Markdown' });
     return;
   }
 
@@ -84,7 +87,7 @@ export async function handle(
     splits,
     proofFileId: proof.fileId,
     proofFileUniqueId: proof.fileUniqueId,
-  });
+  }, lang);
 }
 
 export async function proceedWithProof(
@@ -97,22 +100,26 @@ export async function proceedWithProof(
 
 async function showPreview(
   ctx: Context,
-  payload: Omit<ConfirmExpensePayload, 'flow'>
+  payload: Omit<ConfirmExpensePayload, 'flow'>,
+  lang: ReturnType<typeof getLang>
 ): Promise<void> {
   const telegramId = ctx.from!.id;
   const splitLines = payload.splits
     .map((s) => {
       const ref = escapeMd(s.username ? `@${s.username}` : s.firstName);
-      return `  • ${ref} owes you ${formatMoney(s.amountCents, payload.currency)}`;
+      return t(lang, 'expenseSplitLine', {
+        member: ref,
+        amount: formatMoney(s.amountCents, payload.currency),
+      });
     })
     .join('\n');
 
-  const preview =
-    `📋 *Expense Preview*\n\n` +
-    `Description: *${payload.description}*\n` +
-    `Total: *${formatMoney(payload.amountCentsTotal, payload.currency)}*\n` +
-    `Household: *${payload.householdName}*\n\n` +
-    `*Debts to be created:*\n${splitLines}`;
+  const preview = t(lang, 'expensePreview', {
+    description: escapeMd(payload.description),
+    amount: formatMoney(payload.amountCentsTotal, payload.currency),
+    householdName: escapeMd(payload.householdName),
+    splits: splitLines,
+  });
 
   const fullPayload: ConfirmExpensePayload = { flow: 'EXPENSE', ...payload };
   const pending = await pendingActionRepo.create(telegramId, 'AWAITING_CONFIRM', fullPayload);
@@ -128,7 +135,6 @@ export async function executeExpense(
   payload: ConfirmExpensePayload,
   bot: Telegraf
 ): Promise<void> {
-  // Write transaction
   await transactionRepo.create({
     householdId: payload.householdId,
     actorTelegramId: payload.actorId,
@@ -141,7 +147,6 @@ export async function executeExpense(
     proofFileUniqueId: payload.proofFileUniqueId,
   });
 
-  // Update debts ledger
   for (const split of payload.splits) {
     await debtRepo.addDebt(
       payload.householdId,
@@ -151,15 +156,23 @@ export async function executeExpense(
     );
   }
 
-  // Notify debtors
   const actor = await userRepo.getById(payload.actorId);
   const actorRef = escapeMd(actor?.username ? `@${actor.username}` : actor?.first_name ?? 'Someone');
 
   for (const split of payload.splits) {
+    // Use recipient's language for notifications
+    const recipient = await userRepo.getById(split.telegramId);
+    const recipientLang = (recipient?.language as import('../i18n').Lang | null) ?? null;
+
     await notifyUser(
       bot,
       split.telegramId,
-      `💸 You owe ${actorRef} *${formatMoney(split.amountCents, payload.currency)}* for *${payload.description}* (Household: ${payload.householdName})`,
+      t(recipientLang, 'debtorNotification', {
+        actor: actorRef,
+        amount: formatMoney(split.amountCents, payload.currency),
+        description: escapeMd(payload.description),
+        householdName: escapeMd(payload.householdName),
+      }),
       ctx
     );
     try {
@@ -171,10 +184,13 @@ export async function executeExpense(
     }
   }
 
+  const lang = getLang(ctx);
   await ctx.editMessageText(
-    `✅ Expense recorded!\n\n` +
-      `*${payload.description}* — ${formatMoney(payload.amountCentsTotal, payload.currency)}\n` +
-      `${payload.splits.length} debt(s) created.`,
+    t(lang, 'expenseConfirmed', {
+      description: escapeMd(payload.description),
+      amount: formatMoney(payload.amountCentsTotal, payload.currency),
+      count: String(payload.splits.length),
+    }),
     { parse_mode: 'Markdown' }
   );
 }
@@ -185,30 +201,29 @@ async function resolveHousehold(
   ctx: Context,
   telegramId: number,
   intent: LogExpenseIntent,
-  proof: ProofInfo | null
+  proof: ProofInfo | null,
+  lang: ReturnType<typeof getLang>
 ): Promise<string | null> {
   const households = await householdRepo.getActiveHouseholdsForUser(telegramId);
   if (households.length === 0) {
-    await ctx.reply('You are not in any household. Create or join one first.');
+    await ctx.reply(t(lang, 'notInHousehold'));
     return null;
   }
   if (households.length === 1) return households[0].id;
 
-  // Try to match hint
   if (intent.household_hint) {
     const hint = intent.household_hint.toLowerCase();
     const match = households.filter((h) => h.name.toLowerCase().includes(hint));
     if (match.length === 1) return match[0].id;
   }
 
-  // Need to ask
   const pending = await pendingActionRepo.create(telegramId, 'AWAITING_HOUSEHOLD', {
     intent: 'LOG_EXPENSE',
     data: intent,
     proof,
   });
 
-  await ctx.reply('Which household is this for?', {
+  await ctx.reply(t(lang, 'selectHousehold'), {
     reply_markup: householdSelectionKeyboard(households, pending.id),
   });
   return null;
@@ -217,7 +232,8 @@ async function resolveHousehold(
 async function resolveParticipants(
   ctx: Context,
   rawParticipants: LogExpenseIntent['participants'],
-  members: Array<{ telegram_id: number; username: string | null; first_name: string; last_name: string | null }>
+  members: Array<{ telegram_id: number; username: string | null; first_name: string; last_name: string | null }>,
+  lang: ReturnType<typeof getLang>
 ) {
   const resolved: Array<{
     telegramId: number;
@@ -236,9 +252,7 @@ async function resolveParticipants(
         (m.first_name + ' ' + (m.last_name ?? '')).toLowerCase().trim() === ident
     );
     if (!match) {
-      await ctx.reply(
-        `❓ I couldn't find member "${p.identifier}" in this household. Use their @username or exact first name.`
-      );
+      await ctx.reply(t(lang, 'memberNotFound', { identifier: p.identifier }));
       return null;
     }
     resolved.push({
@@ -265,20 +279,17 @@ function calcSplits(
         ...participants,
       ];
       const even = splitEvenly(totalCents, all);
-      // Only the non-payer entries become debts
       return even.filter((s) => s.telegramId !== payer.telegram_id);
     }
     case 'EVEN_EXCLUDING_PAYER': {
       return splitEvenly(totalCents, participants);
     }
     case 'CUSTOM': {
-      // Try amounts first
       if (participants.every((p) => p.amount !== undefined)) {
         const result = splitByAmounts(totalCents, participants as Parameters<typeof splitByAmounts>[1]);
         if (!result) throw new Error('Custom amounts exceed the total expense amount.');
         return result;
       }
-      // Try percentages
       if (participants.every((p) => p.percentage !== undefined)) {
         const result = splitByPercentages(totalCents, participants as Parameters<typeof splitByPercentages>[1]);
         if (!result) throw new Error('Percentages must sum to 100.');

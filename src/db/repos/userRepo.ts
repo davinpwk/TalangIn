@@ -44,4 +44,12 @@ export const userRepo = {
       .where('username', '=', username.replace(/^@/, ''))
       .executeTakeFirst();
   },
+
+  async setLanguage(telegramId: number, lang: string): Promise<void> {
+    await db
+      .updateTable('users')
+      .set({ language: lang })
+      .where('telegram_id', '=', telegramId)
+      .execute();
+  },
 };

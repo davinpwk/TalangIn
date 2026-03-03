@@ -3,6 +3,9 @@ import { db } from '../database';
 export const debtRepo = {
   /**
    * Increase debt: debtorId owes creditorId more money.
+   * Automatically nets against any reverse debt (creditorId owes debtorId).
+   * e.g. if creditor already owes debtor 30 and we add 10, the result is
+   * creditor still owes debtor 20 — no new row for debtor→creditor.
    */
   async addDebt(
     householdId: string,
@@ -10,19 +13,55 @@ export const debtRepo = {
     creditorTelegramId: number,
     amountCents: number
   ): Promise<void> {
+    // Check for an existing reverse debt (the creditor owes the debtor)
+    const reverseRow = await db
+      .selectFrom('debts_ledger')
+      .select('amount_cents')
+      .where('household_id', '=', householdId)
+      .where('debtor_telegram_id', '=', creditorTelegramId)
+      .where('creditor_telegram_id', '=', debtorTelegramId)
+      .executeTakeFirst();
+
+    const reverseDebt = reverseRow?.amount_cents ?? 0;
+
+    if (reverseDebt >= amountCents) {
+      // The reverse debt absorbs the new amount entirely — just reduce it
+      await db
+        .updateTable('debts_ledger')
+        .set({ amount_cents: reverseDebt - amountCents })
+        .where('household_id', '=', householdId)
+        .where('debtor_telegram_id', '=', creditorTelegramId)
+        .where('creditor_telegram_id', '=', debtorTelegramId)
+        .execute();
+      return;
+    }
+
+    // The new debt exceeds the reverse debt — zero out reverse and add remainder forward
+    const remainder = amountCents - reverseDebt;
+
+    if (reverseDebt > 0) {
+      await db
+        .updateTable('debts_ledger')
+        .set({ amount_cents: 0 })
+        .where('household_id', '=', householdId)
+        .where('debtor_telegram_id', '=', creditorTelegramId)
+        .where('creditor_telegram_id', '=', debtorTelegramId)
+        .execute();
+    }
+
     await db
       .insertInto('debts_ledger')
       .values({
         household_id: householdId,
         debtor_telegram_id: debtorTelegramId,
         creditor_telegram_id: creditorTelegramId,
-        amount_cents: amountCents,
+        amount_cents: remainder,
       })
       .onConflict((oc) =>
         oc
           .columns(['household_id', 'debtor_telegram_id', 'creditor_telegram_id'])
           .doUpdateSet((eb) => ({
-            amount_cents: eb('debts_ledger.amount_cents', '+', amountCents),
+            amount_cents: eb('debts_ledger.amount_cents', '+', remainder),
           }))
       )
       .execute();

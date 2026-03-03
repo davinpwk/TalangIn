@@ -8,6 +8,7 @@ export interface UsersTable {
   first_name: string;
   last_name: string | null;
   started_at: number;
+  language: string | null;
 }
 
 export interface HouseholdsTable {
