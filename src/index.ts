@@ -17,6 +17,14 @@ async function main() {
     bot.stop('SIGTERM');
   });
 
+  // Register bot commands (shows up in Telegram's "/" menu)
+  await bot.telegram.setMyCommands([
+    { command: 'start',    description: 'Welcome & help' },
+    { command: 'help',     description: 'Show what I can do' },
+    { command: 'settings', description: 'Change language' },
+    { command: 'cancel',   description: 'Cancel current action' },
+  ]);
+
   // Start polling
   await bot.launch();
   logger.info('Bot is running (long polling)');
