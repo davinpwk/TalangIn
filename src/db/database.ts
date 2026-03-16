@@ -7,6 +7,7 @@ import { runMigrations } from './migrations/001_initial';
 import { migrate002 } from './migrations/002_add_language';
 import { migrate003 } from './migrations/003_net_existing_debts';
 import { migrate004 } from './migrations/004_button_mode_features';
+import { migrate005 } from './migrations/005_add_version_tracking';
 
 const rawDb = new BetterSqlite3(config.dbPath);
 
@@ -19,6 +20,7 @@ runMigrations(rawDb);
 migrate002(rawDb);
 migrate003(rawDb);
 migrate004(rawDb);
+migrate005(rawDb);
 logger.info({ dbPath: config.dbPath }, 'Database initialized');
 
 export const db = new Kysely<Database>({

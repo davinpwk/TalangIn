@@ -4,8 +4,26 @@ const en = {
   // General
   welcome:
     `👋 Welcome to *TalangIn*!\n\n` +
-    `I help households track shared expenses and debts. ` +
-    `No rigid commands — just tell me what happened and I'll handle it.\n\n`,
+    `Track shared expenses and debts with your household.\n\n` +
+    `*What you can do:*\n` +
+    `💸 Log expenses & split bills\n` +
+    `💳 Record payments to housemates\n` +
+    `📊 View who owes what\n` +
+    `🤝 Log debts you owe\n` +
+    `📢 Broadcast messages to your household\n` +
+    `📦 Track shared item usage\n\n` +
+    `Tap *🏠 Set Household* to get started.`,
+  welcomeBack: `👋 Welcome back! Use the buttons below.`,
+  whatsNew:
+    `🆕 *What's New in TalangIn*\n\n` +
+    `• 🔘 *Button Mode* — step\\-by\\-step wizards for all features\n` +
+    `• 🏠 *Create/Join household* — directly from the button menu\n` +
+    `• 👤 *Nicknames* — set a display name others will see\n` +
+    `• 🤝 *I Owe* — self\\-log debts you owe to others\n` +
+    `• 📦 *Item Tracker* — track shared household item usage\n` +
+    `• 📷 *Photo broadcasts* — send photos to your household\n` +
+    `• ❌ *Cancel buttons* — back out of any action anytime\n` +
+    `• ✅ *Split flexibility* — include or exclude yourself from expense splits`,
   helpText:
     `🏠 *TalangIn — Household Debt Manager*\n\n` +
     `Just talk to me naturally — no commands needed. I'll always ask you to confirm before doing anything.\n\n` +
@@ -258,8 +276,26 @@ const id: typeof en = {
   // General
   welcome:
     `👋 Selamat datang di *TalangIn*!\n\n` +
-    `Aku bantu kamu dan anggota rumah bersama untuk catat pengeluaran dan utang. ` +
-    `Nggak perlu perintah khusus — ceritain aja yang terjadi.\n\n`,
+    `Catat pengeluaran dan utang bersama anggota rumah tangga kamu.\n\n` +
+    `*Yang bisa kamu lakukan:*\n` +
+    `💸 Catat pengeluaran & bagi tagihan\n` +
+    `💳 Catat pembayaran ke teman serumah\n` +
+    `📊 Lihat siapa berutang ke siapa\n` +
+    `🤝 Catat utang yang kamu punya\n` +
+    `📢 Kirim pesan ke seluruh anggota\n` +
+    `📦 Lacak penggunaan barang bersama\n\n` +
+    `Ketuk *🏠 Set Household* untuk mulai.`,
+  welcomeBack: `👋 Selamat datang kembali! Gunakan tombol di bawah.`,
+  whatsNew:
+    `🆕 *Yang Baru di TalangIn*\n\n` +
+    `• 🔘 *Mode Tombol* — panduan langkah demi langkah untuk semua fitur\n` +
+    `• 🏠 *Buat/Gabung rumah tangga* — langsung dari menu tombol\n` +
+    `• 👤 *Nama panggilan* — atur nama yang dilihat orang lain\n` +
+    `• 🤝 *I Owe* — catat sendiri utang yang kamu punya\n` +
+    `• 📦 *Pelacak Barang* — lacak penggunaan barang bersama\n` +
+    `• 📷 *Siaran foto* — kirim foto ke anggota rumah tangga\n` +
+    `• ❌ *Tombol batal* — batalkan aksi kapan saja\n` +
+    `• ✅ *Fleksibel split* — masukkan atau keluarkan dirimu dari pembagian`,
   helpText:
     `🏠 *TalangIn — Manajemen Utang Rumah Tangga*\n\n` +
     `Cukup ngobrol dengan aku secara alami — tidak perlu perintah khusus. Aku selalu minta konfirmasi sebelum melakukan apapun.\n\n` +

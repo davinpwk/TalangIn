@@ -25,6 +25,7 @@ import { languageKeyboard } from './keyboards/languageKeyboard';
 import { mainReplyKeyboard } from './keyboards/replyKeyboard';
 import { escapeMd } from '../domain/money';
 import { t, getLang, LANG_NAMES, type Lang } from '../i18n';
+import { APP_VERSION } from '../utils/version';
 import { handleButtonModeText } from './buttonMode/router';
 import * as broadcastWizard from './buttonMode/broadcastWizard';
 import type { ProofInfo } from '../types';
@@ -39,6 +40,17 @@ async function upsertAndLoadLang(ctx: Context): Promise<void> {
   });
   const user = await userRepo.getById(ctx.from.id);
   (ctx.state as Record<string, unknown>)['lang'] = (user?.language as Lang | null) ?? null;
+
+  // Send "What's New" once per version to returning users (language already set)
+  if (user?.language && user.last_seen_version !== APP_VERSION) {
+    await userRepo.setLastSeenVersion(ctx.from.id, APP_VERSION);
+    const lang = (user.language as Lang | null) ?? null;
+    try {
+      await ctx.reply(t(lang, 'whatsNew'), { parse_mode: 'MarkdownV2' });
+    } catch {
+      // Silently skip if reply fails in this context
+    }
+  }
 }
 
 export function createBot(): Telegraf {
@@ -77,23 +89,27 @@ export function createBot(): Telegraf {
     // Language already set — show welcome
     const user = await userRepo.getById(ctx.from.id);
     const mode = user?.mode ?? 'button';
+    const isReturning = !!user?.active_household_id || (user?.started_at ?? 0) < Math.floor(Date.now() / 1000) - 60;
 
-    await ctx.reply(t(lang, 'welcome') + t(lang, 'helpText'), {
-      parse_mode: 'Markdown',
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: '⚙️ Change language', callback_data: 'lang_settings' }],
-        ],
-      },
-    });
-
-    // Send reply keyboard if in button mode
     if (mode === 'button') {
       const activeHousehold = user?.active_household_id
         ? await householdRepo.getById(user.active_household_id)
         : null;
-      await ctx.reply('👇', {
+
+      const welcomeMsg = isReturning ? t(lang, 'welcomeBack') : t(lang, 'welcome');
+      await ctx.reply(welcomeMsg, {
+        parse_mode: 'Markdown',
         reply_markup: mainReplyKeyboard(activeHousehold?.name ?? null).reply_markup,
+      });
+    } else {
+      // LLM mode — show full help
+      await ctx.reply(t(lang, 'welcome') + '\n\n' + t(lang, 'helpText'), {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '⚙️ Change language', callback_data: 'lang_settings' }],
+          ],
+        },
       });
     }
 

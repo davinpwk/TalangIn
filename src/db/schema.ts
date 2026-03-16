@@ -12,6 +12,7 @@ export interface UsersTable {
   nickname: string | null;
   mode: string | null;
   active_household_id: string | null;
+  last_seen_version: string | null;
 }
 
 export interface HouseholdsTable {

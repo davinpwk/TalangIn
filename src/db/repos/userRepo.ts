@@ -80,4 +80,12 @@ export const userRepo = {
       .where('telegram_id', '=', telegramId)
       .execute();
   },
+
+  async setLastSeenVersion(telegramId: number, version: string): Promise<void> {
+    await db
+      .updateTable('users')
+      .set({ last_seen_version: version })
+      .where('telegram_id', '=', telegramId)
+      .execute();
+  },
 };
