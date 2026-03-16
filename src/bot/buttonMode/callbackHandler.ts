@@ -193,6 +193,14 @@ export async function handleButtonModeCallback(
     return;
   }
 
+  // bm:cancel — universal cancel for any wizard step
+  if (data === 'bm:cancel') {
+    await pendingActionRepo.clearForUser(telegramId);
+    await ctx.answerCbQuery('Cancelled.');
+    await ctx.editMessageText(t(lang, 'cancelledAction'), { reply_markup: undefined });
+    return;
+  }
+
   // bm:mode_cancel
   if (data === 'bm:mode_cancel') {
     await ctx.answerCbQuery('Cancelled.');

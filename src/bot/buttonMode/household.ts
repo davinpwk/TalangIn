@@ -7,6 +7,7 @@ import { escapeMd } from '../../domain/money';
 import { t, getLang } from '../../i18n';
 import { mainReplyKeyboard } from '../keyboards/replyKeyboard';
 import * as joinHouseholdFlow from '../../flows/joinHousehold';
+import { cancelKeyboard } from '../keyboards/cancelKeyboard';
 
 export async function showHouseholdPicker(ctx: Context, telegramId: number): Promise<void> {
   const lang = getLang(ctx);
@@ -74,7 +75,7 @@ export async function startCreateHousehold(ctx: Context, telegramId: number): Pr
   const lang = getLang(ctx);
   await pendingActionRepo.create(telegramId, 'BM_CREATE_HH_NAME', {});
   await ctx.answerCbQuery();
-  await ctx.reply(t(lang, 'createHouseholdNamePrompt'));
+  await ctx.reply(t(lang, 'createHouseholdNamePrompt'), { reply_markup: cancelKeyboard });
 }
 
 export async function onCreateHouseholdName(
@@ -97,6 +98,7 @@ export async function onCreateHouseholdName(
           { text: 'USD 🇺🇸', callback_data: 'bm:hh:currency:USD' },
           { text: 'SGD 🇸🇬', callback_data: 'bm:hh:currency:SGD' },
         ],
+        [{ text: '❌ Cancel', callback_data: 'bm:cancel' }],
       ],
     },
   });
@@ -148,7 +150,7 @@ export async function startJoinHousehold(ctx: Context, telegramId: number): Prom
   const lang = getLang(ctx);
   await pendingActionRepo.create(telegramId, 'BM_JOIN_HH_CODE', {});
   await ctx.answerCbQuery();
-  await ctx.reply(t(lang, 'joinHouseholdCodePrompt'));
+  await ctx.reply(t(lang, 'joinHouseholdCodePrompt'), { reply_markup: cancelKeyboard });
 }
 
 export async function onJoinHouseholdCode(

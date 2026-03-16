@@ -7,6 +7,7 @@ import { escapeMd } from '../../domain/money';
 import { t, getLang } from '../../i18n';
 import { executeBroadcast } from '../../flows/broadcast';
 import type { BmBroadcastPayload, ConfirmBroadcastPayload, ProofInfo } from '../../types';
+import { cancelKeyboard } from '../keyboards/cancelKeyboard';
 
 export async function start(ctx: Context, telegramId: number, householdId: string): Promise<void> {
   const lang = getLang(ctx);
@@ -31,7 +32,7 @@ export async function start(ctx: Context, telegramId: number, householdId: strin
     householdName: escapeMd(household.name),
     count: String(recipients.length),
     message: '...',
-  }).split('\n')[0] + `\n\nType your message or send a photo with caption (${recipients.length} recipient(s)):`, { parse_mode: 'Markdown' });
+  }).split('\n')[0] + `\n\nType your message or send a photo with caption (${recipients.length} recipient(s)):`, { parse_mode: 'Markdown', reply_markup: cancelKeyboard });
 }
 
 export async function onText(

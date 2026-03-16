@@ -5,6 +5,7 @@ import { pendingActionRepo, PendingAction } from '../../db/repos/pendingActionRe
 import { escapeMd } from '../../domain/money';
 import { t, getLang } from '../../i18n';
 import type { BmItemPayload } from '../../types';
+import { cancelKeyboard } from '../keyboards/cancelKeyboard';
 
 export async function showMenu(ctx: Context, telegramId: number, householdId: string): Promise<void> {
   const lang = getLang(ctx);
@@ -73,7 +74,7 @@ export async function showLogUsage(ctx: Context, telegramId: number, householdId
   ]);
 
   await ctx.answerCbQuery();
-  await ctx.reply(t(lang, 'itemPick'), { reply_markup: { inline_keyboard: buttons } });
+  await ctx.reply(t(lang, 'itemPick'), { reply_markup: { inline_keyboard: [...buttons, [{ text: '❌ Cancel', callback_data: 'bm:cancel' }]] } });
 }
 
 export async function onItemSelect(ctx: Context, itemId: string, pendingId: string): Promise<void> {
@@ -97,7 +98,7 @@ export async function onItemSelect(ctx: Context, itemId: string, pendingId: stri
   await pendingActionRepo.updatePayload(action.id, payload);
 
   await ctx.answerCbQuery();
-  await ctx.editMessageText(t(lang, 'quantityPrompt'));
+  await ctx.editMessageText(t(lang, 'quantityPrompt'), { reply_markup: cancelKeyboard });
 }
 
 export async function onQuantity(ctx: Context, text: string, action: PendingAction): Promise<void> {
@@ -145,7 +146,7 @@ export async function startAddItem(ctx: Context, telegramId: number, householdId
   const payload: BmItemPayload = { householdId, action: 'add' };
   await pendingActionRepo.create(telegramId, 'BM_ITEM_ADD_NAME', payload);
   await ctx.answerCbQuery();
-  await ctx.reply(t(lang, 'addItemPrompt'));
+  await ctx.reply(t(lang, 'addItemPrompt'), { reply_markup: cancelKeyboard });
 }
 
 export async function onAddItemName(ctx: Context, text: string, action: PendingAction): Promise<void> {
@@ -184,7 +185,7 @@ export async function showRemoveItem(ctx: Context, telegramId: number, household
   ]);
 
   await ctx.answerCbQuery();
-  await ctx.reply(t(lang, 'removeItemPick'), { reply_markup: { inline_keyboard: buttons } });
+  await ctx.reply(t(lang, 'removeItemPick'), { reply_markup: { inline_keyboard: [...buttons, [{ text: '❌ Cancel', callback_data: 'bm:cancel' }]] } });
 }
 
 export async function onRemoveItem(ctx: Context, itemId: string, pendingId: string): Promise<void> {
@@ -227,7 +228,7 @@ export async function showResetItem(ctx: Context, telegramId: number, householdI
   ]);
 
   await ctx.answerCbQuery();
-  await ctx.reply(t(lang, 'resetPick'), { reply_markup: { inline_keyboard: buttons } });
+  await ctx.reply(t(lang, 'resetPick'), { reply_markup: { inline_keyboard: [...buttons, [{ text: '❌ Cancel', callback_data: 'bm:cancel' }]] } });
 }
 
 export async function onResetItem(ctx: Context, itemId: string, pendingId: string): Promise<void> {

@@ -40,7 +40,7 @@ export async function startNickname(ctx: Context, telegramId: number): Promise<v
   const lang = getLang(ctx);
   await pendingActionRepo.create(telegramId, 'BM_NICKNAME', {});
   await ctx.answerCbQuery();
-  await ctx.reply(t(lang, 'nicknamePrompt'));
+  await ctx.reply(t(lang, 'nicknamePrompt'), { reply_markup: { inline_keyboard: [[{ text: '❌ Cancel', callback_data: 'bm:cancel' }]] } });
 }
 
 export async function onNickname(ctx: Context, text: string): Promise<void> {

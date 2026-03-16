@@ -6,6 +6,7 @@ import { toCents, formatMoney, escapeMd } from '../../domain/money';
 import { displayName } from '../../domain/displayName';
 import { t, getLang } from '../../i18n';
 import type { BmPaymentPayload, ConfirmPaymentPayload, BmAwaitingProofPayload } from '../../types';
+import { cancelKeyboard } from '../keyboards/cancelKeyboard';
 
 type MemberRow = {
   telegram_id: number;
@@ -53,7 +54,7 @@ export async function start(ctx: Context, telegramId: number, householdId: strin
   ]);
 
   await ctx.reply(t(lang, 'creditorPick'), {
-    reply_markup: { inline_keyboard: memberButtons },
+    reply_markup: { inline_keyboard: [...memberButtons, [{ text: '❌ Cancel', callback_data: 'bm:cancel' }]] },
   });
 }
 
@@ -91,6 +92,7 @@ export async function onMemberSelect(
   const buttons = [
     [{ text: t(lang, 'fullPayBtn', { amount: formatMoney(outstanding, payload.currency) }), callback_data: `bm:full_pay:${pendingId}` }],
     [{ text: t(lang, 'customPayBtn'), callback_data: `bm:custom_pay:${pendingId}` }],
+    [{ text: '❌ Cancel', callback_data: 'bm:cancel' }],
   ];
 
   if (outstanding === 0) {
@@ -136,7 +138,7 @@ export async function onCustomPay(ctx: Context, pendingId: string): Promise<void
   const payload = JSON.parse(action.payload_json) as BmPaymentPayload;
   await pendingActionRepo.updateTypeAndPayload(action.id, 'BM_PAYMENT_AMOUNT', payload);
   await ctx.answerCbQuery();
-  await ctx.editMessageText(t(lang, 'payAmountPrompt'));
+  await ctx.editMessageText(t(lang, 'payAmountPrompt'), { reply_markup: cancelKeyboard });
 }
 
 export async function onAmount(ctx: Context, text: string, action: PendingAction): Promise<void> {
@@ -192,5 +194,5 @@ async function showPaymentPreview(
   const telegramId = ctx.from!.id;
   await pendingActionRepo.create(telegramId, 'BM_AWAITING_PROOF', bmProofPayload);
 
-  await ctx.reply(preview + '\n\n' + t(lang, 'proofPrompt'), { parse_mode: 'Markdown' });
+  await ctx.reply(preview + '\n\n' + t(lang, 'proofPrompt'), { parse_mode: 'Markdown', reply_markup: cancelKeyboard });
 }

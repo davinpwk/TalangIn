@@ -8,6 +8,7 @@ import { displayName } from '../../domain/displayName';
 import { t, getLang } from '../../i18n';
 import { executeIOwe } from '../../flows/iOwe';
 import type { BmIOwePayload, ConfirmIOwePayload } from '../../types';
+import { cancelKeyboard } from '../keyboards/cancelKeyboard';
 
 type MemberRow = {
   telegram_id: number;
@@ -46,7 +47,7 @@ export async function start(ctx: Context, telegramId: number, householdId: strin
   ]);
 
   await ctx.reply(t(lang, 'iOweCreditorPrompt'), {
-    reply_markup: { inline_keyboard: buttons },
+    reply_markup: { inline_keyboard: [...buttons, [{ text: '❌ Cancel', callback_data: 'bm:cancel' }]] },
   });
 }
 
@@ -75,7 +76,7 @@ export async function onCreditorSelect(
 
   await pendingActionRepo.updateTypeAndPayload(action.id, 'BM_IOWE_DESC', payload);
   await ctx.answerCbQuery();
-  await ctx.editMessageText(t(lang, 'iOweDescPrompt'));
+  await ctx.editMessageText(t(lang, 'iOweDescPrompt'), { reply_markup: cancelKeyboard });
 }
 
 export async function onDesc(ctx: Context, text: string, action: PendingAction): Promise<void> {
@@ -83,7 +84,7 @@ export async function onDesc(ctx: Context, text: string, action: PendingAction):
   const payload = JSON.parse(action.payload_json) as BmIOwePayload;
   payload.description = text;
   await pendingActionRepo.updateTypeAndPayload(action.id, 'BM_IOWE_AMOUNT', payload);
-  await ctx.reply(t(lang, 'iOweAmountPrompt'));
+  await ctx.reply(t(lang, 'iOweAmountPrompt'), { reply_markup: cancelKeyboard });
 }
 
 export async function onAmount(ctx: Context, text: string, action: PendingAction, bot: Telegraf): Promise<void> {

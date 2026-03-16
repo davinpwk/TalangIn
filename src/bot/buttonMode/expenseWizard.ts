@@ -9,6 +9,7 @@ import { displayName } from '../../domain/displayName';
 import { splitEvenly } from '../../domain/splits';
 import { t, getLang } from '../../i18n';
 import type { BmExpensePayload, ConfirmExpensePayload, SplitEntry, BmAwaitingProofPayload } from '../../types';
+import { cancelKeyboard } from '../keyboards/cancelKeyboard';
 
 type MemberRow = {
   telegram_id: number;
@@ -30,7 +31,7 @@ export async function start(ctx: Context, telegramId: number, householdId: strin
   };
 
   await pendingActionRepo.create(telegramId, 'BM_EXPENSE_DESC', payload);
-  await ctx.reply(t(lang, 'descPrompt'));
+  await ctx.reply(t(lang, 'descPrompt'), { reply_markup: cancelKeyboard });
 }
 
 export async function onDesc(ctx: Context, text: string, action: PendingAction): Promise<void> {
@@ -38,7 +39,7 @@ export async function onDesc(ctx: Context, text: string, action: PendingAction):
   const payload = JSON.parse(action.payload_json) as BmExpensePayload;
   payload.description = text;
   await pendingActionRepo.updateTypeAndPayload(action.id, 'BM_EXPENSE_AMOUNT', payload);
-  await ctx.reply(t(lang, 'amountPrompt'));
+  await ctx.reply(t(lang, 'amountPrompt'), { reply_markup: cancelKeyboard });
 }
 
 export async function onAmount(ctx: Context, text: string, action: PendingAction): Promise<void> {
@@ -61,6 +62,7 @@ export async function onAmount(ctx: Context, text: string, action: PendingAction
           { text: t(lang, 'splitEvenBtn'), callback_data: `bm:split:${action.id}:even` },
           { text: t(lang, 'splitCustomBtn'), callback_data: `bm:split:${action.id}:custom` },
         ],
+        [{ text: '❌ Cancel', callback_data: 'bm:cancel' }],
       ],
     },
   });
@@ -110,7 +112,7 @@ export async function onSplitType(
     }
     const firstMember = otherMembers[0];
     const memberName = escapeMd(displayName(firstMember as { nickname?: string | null; username?: string | null; first_name: string }));
-    await ctx.editMessageText(t(lang, 'customAmountPrompt', { member: memberName }), { parse_mode: 'Markdown' });
+    await ctx.editMessageText(t(lang, 'customAmountPrompt', { member: memberName }), { parse_mode: 'Markdown', reply_markup: cancelKeyboard });
   }
 }
 
@@ -215,7 +217,7 @@ export async function onCustomAmount(
     await pendingActionRepo.updatePayload(action.id, payload);
     const nextMember = otherMembers.find((m) => m.telegram_id === memberIds[nextIndex]);
     const memberName = nextMember ? escapeMd(displayName(nextMember as { nickname?: string | null; username?: string | null; first_name: string })) : `member ${nextIndex + 1}`;
-    await ctx.reply(t(lang, 'customAmountPrompt', { member: memberName }), { parse_mode: 'Markdown' });
+    await ctx.reply(t(lang, 'customAmountPrompt', { member: memberName }), { parse_mode: 'Markdown', reply_markup: cancelKeyboard });
   } else {
     // All collected — validate sum <= total
     const totalAssigned = Object.values(payload.customAmounts).reduce((a, b) => a + b, 0);
@@ -227,7 +229,7 @@ export async function onCustomAmount(
       await pendingActionRepo.updatePayload(action.id, payload);
       const firstMember = otherMembers.find((m) => m.telegram_id === memberIds[0]);
       const memberName = firstMember ? escapeMd(displayName(firstMember as { nickname?: string | null; username?: string | null; first_name: string })) : 'first member';
-      await ctx.reply(t(lang, 'customAmountPrompt', { member: memberName }), { parse_mode: 'Markdown' });
+      await ctx.reply(t(lang, 'customAmountPrompt', { member: memberName }), { parse_mode: 'Markdown', reply_markup: cancelKeyboard });
       return;
     }
 
@@ -292,7 +294,7 @@ async function showExpensePreview(
   const telegramId = ctx.from!.id;
   await pendingActionRepo.create(telegramId, 'BM_AWAITING_PROOF', bmProofPayload);
 
-  await ctx.reply(preview + '\n\n' + t(lang, 'proofPrompt'), { parse_mode: 'Markdown' });
+  await ctx.reply(preview + '\n\n' + t(lang, 'proofPrompt'), { parse_mode: 'Markdown', reply_markup: cancelKeyboard });
 }
 
 function buildMemberToggleKeyboard(
@@ -314,5 +316,6 @@ function buildMemberToggleKeyboard(
     ];
   });
   rows.push([{ text: '✅ Done', callback_data: `bm:done:${pendingId}` }]);
+  rows.push([{ text: '❌ Cancel', callback_data: 'bm:cancel' }]);
   return { inline_keyboard: rows };
 }
