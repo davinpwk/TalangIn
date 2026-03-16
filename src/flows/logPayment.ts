@@ -174,7 +174,11 @@ export async function executePayment(
     resultMsg += t(lang, 'paymentCapped');
   }
 
-  await ctx.editMessageText(resultMsg, { parse_mode: 'Markdown' });
+  try {
+    await ctx.editMessageText(resultMsg, { parse_mode: 'Markdown' });
+  } catch {
+    await ctx.reply(resultMsg, { parse_mode: 'Markdown' });
+  }
 
   // Notify creditor in their language
   const creditor = await userRepo.getById(payload.creditorId);

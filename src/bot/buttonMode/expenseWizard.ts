@@ -88,13 +88,14 @@ export async function onSplitType(
 
   if (type === 'even') {
     payload.splitType = 'EVEN';
-    payload.selectedMembers = otherMembers.map((m) => m.telegram_id);
+    // Pre-select everyone including the payer (user can uncheck themselves to treat)
+    payload.selectedMembers = allMembers.map((m) => m.telegram_id);
     await pendingActionRepo.updateTypeAndPayload(action.id, 'BM_EXPENSE_MEMBERS', payload);
 
-    // Show member toggle keyboard
+    // Show member toggle keyboard with all members (including payer)
     await ctx.editMessageText(t(lang, 'membersPick'), {
       parse_mode: 'Markdown',
-      reply_markup: buildMemberToggleKeyboard(otherMembers, payload.selectedMembers, pendingId),
+      reply_markup: buildMemberToggleKeyboard(allMembers, payload.selectedMembers, pendingId, telegramId),
     });
   } else {
     payload.splitType = 'CUSTOM';
@@ -139,10 +140,9 @@ export async function onMemberToggle(
 
   const telegramId = ctx.from!.id;
   const allMembers = await householdRepo.getActiveMembers(payload.householdId) as MemberRow[];
-  const otherMembers = allMembers.filter((m) => m.telegram_id !== telegramId);
 
   await ctx.answerCbQuery();
-  await ctx.editMessageReplyMarkup(buildMemberToggleKeyboard(otherMembers, selected, pendingId));
+  await ctx.editMessageReplyMarkup(buildMemberToggleKeyboard(allMembers, selected, pendingId, telegramId));
 }
 
 export async function onMembersDone(ctx: Context, pendingId: string, bot: Telegraf): Promise<void> {
@@ -166,10 +166,12 @@ export async function onMembersDone(ctx: Context, pendingId: string, bot: Telegr
   const otherMembers = allMembers.filter((m) => m.telegram_id !== telegramId);
   const payer = allMembers.find((m) => m.telegram_id === telegramId)!;
 
-  const participants = otherMembers.filter((m) => selected.includes(m.telegram_id));
+  const selectedOthers = otherMembers.filter((m) => selected.includes(m.telegram_id));
+  const payerIsSelected = selected.includes(telegramId);
 
-  // EVEN: all selected + payer
-  const allForSplit = [payer, ...participants];
+  // If payer is checked: split total among payer + selectedOthers (each pays total/n)
+  // If payer is unchecked: split total only among selectedOthers (payer treats)
+  const allForSplit = payerIsSelected ? [payer, ...selectedOthers] : selectedOthers;
   const splitResults = splitEvenly(payload.totalCents!, allForSplit.map((m) => ({
     telegramId: m.telegram_id,
     username: m.username ?? null,
@@ -296,14 +298,17 @@ async function showExpensePreview(
 function buildMemberToggleKeyboard(
   members: MemberRow[],
   selected: number[],
-  pendingId: string
+  pendingId: string,
+  payerTelegramId?: number
 ): { inline_keyboard: Array<Array<{ text: string; callback_data: string }>> } {
   const rows = members.map((m) => {
     const isSelected = selected.includes(m.telegram_id);
+    const isPayer = m.telegram_id === payerTelegramId;
     const name = displayName(m as { nickname?: string | null; username?: string | null; first_name: string });
+    const label = isPayer ? `${name} (you)` : name;
     return [
       {
-        text: (isSelected ? '✅ ' : '☐ ') + name,
+        text: (isSelected ? '✅ ' : '☐ ') + label,
         callback_data: `bm:toggle:${pendingId}:${m.telegram_id}`,
       },
     ];

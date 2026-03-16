@@ -190,14 +190,16 @@ export async function executeExpense(
   }
 
   const lang = getLang(ctx);
-  await ctx.editMessageText(
-    t(lang, 'expenseConfirmed', {
-      description: escapeMd(payload.description),
-      amount: formatMoney(payload.amountCentsTotal, payload.currency),
-      count: String(payload.splits.length),
-    }),
-    { parse_mode: 'Markdown' }
-  );
+  const confirmedMsg = t(lang, 'expenseConfirmed', {
+    description: escapeMd(payload.description),
+    amount: formatMoney(payload.amountCentsTotal, payload.currency),
+    count: String(payload.splits.length),
+  });
+  try {
+    await ctx.editMessageText(confirmedMsg, { parse_mode: 'Markdown' });
+  } catch {
+    await ctx.reply(confirmedMsg, { parse_mode: 'Markdown' });
+  }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
