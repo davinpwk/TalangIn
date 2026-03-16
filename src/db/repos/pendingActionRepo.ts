@@ -21,6 +21,9 @@ const EXPIRY = {
   BM_ITEM_ADD_NAME: 30 * 60,
   BM_NICKNAME: 30 * 60,
   BM_AWAITING_PROOF: 30 * 60,
+  BM_CREATE_HH_NAME: 30 * 60,
+  BM_CREATE_HH_CURRENCY: 30 * 60,
+  BM_JOIN_HH_CODE: 30 * 60,
 } as const;
 
 type ActionType = keyof typeof EXPIRY;

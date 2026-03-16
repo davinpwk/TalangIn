@@ -6,7 +6,7 @@ import { executeExpense } from '../../flows/logExpense';
 import { executePayment } from '../../flows/logPayment';
 import { executeIOwe } from '../../flows/iOwe';
 import { t, getLang } from '../../i18n';
-import { handleHouseholdSelect } from './household';
+import { handleHouseholdSelect, startCreateHousehold, startJoinHousehold, onCreateHouseholdCurrency } from './household';
 import * as expenseWizard from './expenseWizard';
 import * as paymentWizard from './paymentWizard';
 import * as itemTrackerWizard from './itemTrackerWizard';
@@ -28,6 +28,21 @@ export async function handleButtonModeCallback(
   if (data.startsWith('bm:hs:')) {
     const householdId = data.slice('bm:hs:'.length);
     await handleHouseholdSelect(ctx, householdId);
+    return;
+  }
+
+  // bm:hh:create / bm:hh:join / bm:hh:currency:<CURR>
+  if (data === 'bm:hh:create') {
+    await startCreateHousehold(ctx, telegramId);
+    return;
+  }
+  if (data === 'bm:hh:join') {
+    await startJoinHousehold(ctx, telegramId);
+    return;
+  }
+  if (data.startsWith('bm:hh:currency:')) {
+    const currency = data.slice('bm:hh:currency:'.length);
+    await onCreateHouseholdCurrency(ctx, currency);
     return;
   }
 

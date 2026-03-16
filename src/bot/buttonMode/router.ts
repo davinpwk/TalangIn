@@ -13,7 +13,7 @@ import * as iOweWizard from './iOweWizard';
 import * as broadcastWizard from './broadcastWizard';
 import * as itemTrackerWizard from './itemTrackerWizard';
 import * as settingsWizard from './settingsWizard';
-import { showHouseholdPicker } from './household';
+import { showHouseholdPicker, onCreateHouseholdName, onJoinHouseholdCode } from './household';
 
 export async function handleButtonModeText(
   ctx: Context,
@@ -31,6 +31,16 @@ export async function handleButtonModeText(
   // Settings flows that don't need a household
   if (pending?.type === 'BM_NICKNAME') {
     await settingsWizard.onNickname(ctx, text);
+    return;
+  }
+
+  // Household creation/join flows — no active household needed
+  if (pending?.type === 'BM_CREATE_HH_NAME') {
+    await onCreateHouseholdName(ctx, text, pending);
+    return;
+  }
+  if (pending?.type === 'BM_JOIN_HH_CODE') {
+    await onJoinHouseholdCode(ctx, text, pending, bot);
     return;
   }
 

@@ -180,7 +180,12 @@ const en = {
 
   // Household picker
   pickHousehold: '🏠 Which household would you like to use?',
-  noHouseholds: 'You are not in any household. Create or join one first.',
+  noHouseholds: "You're not in any household yet. What would you like to do?",
+  createHouseholdBtn: '➕ Create Household',
+  joinHouseholdBtn: '🔗 Join with Code',
+  createHouseholdNamePrompt: '🏠 What would you like to name your household?',
+  createHouseholdCurrencyPrompt: '💱 Pick a currency for *{name}*:',
+  joinHouseholdCodePrompt: '🔗 Enter the join code:',
   activeHouseholdSet: '✅ Now working in: *{name}*',
   changeHousehold: '🔄 Change Household',
 
@@ -430,7 +435,12 @@ const id: typeof en = {
 
   // Household picker
   pickHousehold: '🏠 Rumah tangga mana yang ingin kamu gunakan?',
-  noHouseholds: 'Kamu belum bergabung ke rumah tangga manapun. Buat atau bergabung dulu.',
+  noHouseholds: 'Kamu belum bergabung ke rumah tangga manapun. Mau ngapain?',
+  createHouseholdBtn: '➕ Buat Rumah Tangga',
+  joinHouseholdBtn: '🔗 Gabung dengan Kode',
+  createHouseholdNamePrompt: '🏠 Apa nama rumah tangga kamu?',
+  createHouseholdCurrencyPrompt: '💱 Pilih mata uang untuk *{name}*:',
+  joinHouseholdCodePrompt: '🔗 Masukkan kode bergabung:',
   activeHouseholdSet: '✅ Sekarang menggunakan: *{name}*',
   changeHousehold: '🔄 Ganti Rumah Tangga',
 
