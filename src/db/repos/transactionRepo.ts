@@ -4,7 +4,7 @@ import { generateId } from '../../domain/money';
 export interface CreateTransactionData {
   householdId: string;
   actorTelegramId: number;
-  type: 'EXPENSE' | 'PAYMENT';
+  type: 'EXPENSE' | 'PAYMENT' | 'DEBT_LOG';
   description: string;
   currency: string;
   amountCentsTotal: number;

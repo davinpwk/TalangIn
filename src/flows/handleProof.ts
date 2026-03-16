@@ -6,8 +6,10 @@ import { classifyIntent } from '../llm/provider';
 import { buildMessages } from '../llm/prompt';
 import * as logExpenseFlow from './logExpense';
 import * as logPaymentFlow from './logPayment';
+import { executeExpense } from './logExpense';
+import { executePayment } from './logPayment';
 import { t, getLang } from '../i18n';
-import type { ProofInfo } from '../types';
+import type { ProofInfo, BmAwaitingProofPayload, ConfirmExpensePayload, ConfirmPaymentPayload } from '../types';
 import type { LogExpenseIntent, LogPaymentIntent } from '../llm/schemas';
 
 export async function handleAttachment(
@@ -21,6 +23,31 @@ export async function handleAttachment(
 
   // 1. Is there a pending AWAITING_PROOF state for this user?
   const pending = await pendingActionRepo.getActive(telegramId);
+
+  // Button mode: BM_AWAITING_PROOF
+  if (pending?.type === 'BM_AWAITING_PROOF') {
+    await pendingActionRepo.markUsed(pending.id);
+    const data = JSON.parse(pending.payload_json) as BmAwaitingProofPayload;
+
+    if (data.flow === 'EXPENSE') {
+      const fullPayload: ConfirmExpensePayload = {
+        ...(data.confirmPayload as Omit<ConfirmExpensePayload, 'proofFileId' | 'proofFileUniqueId'>),
+        proofFileId: proof.fileId,
+        proofFileUniqueId: proof.fileUniqueId,
+      };
+      await executeExpense(ctx, fullPayload, bot);
+    } else if (data.flow === 'PAYMENT') {
+      const fullPayload: ConfirmPaymentPayload = {
+        ...(data.confirmPayload as Omit<ConfirmPaymentPayload, 'proofFileId' | 'proofFileUniqueId'>),
+        proofFileId: proof.fileId,
+        proofFileUniqueId: proof.fileUniqueId,
+      };
+      await executePayment(ctx, fullPayload, bot);
+    }
+    return;
+  }
+
+  // LLM mode: AWAITING_PROOF
   if (pending?.type === 'AWAITING_PROOF') {
     await pendingActionRepo.markUsed(pending.id);
     const savedData = JSON.parse(pending.payload_json) as {

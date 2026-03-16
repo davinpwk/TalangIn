@@ -3,9 +3,24 @@ import { generateId, generateToken } from '../../domain/money';
 
 // Expiry windows in seconds
 const EXPIRY = {
-  AWAITING_PROOF: 30 * 60,   // 30 minutes
-  AWAITING_CONFIRM: 10 * 60, // 10 minutes
-  AWAITING_HOUSEHOLD: 5 * 60, // 5 minutes
+  AWAITING_PROOF: 30 * 60,      // 30 minutes
+  AWAITING_CONFIRM: 10 * 60,    // 10 minutes
+  AWAITING_HOUSEHOLD: 5 * 60,   // 5 minutes
+  // Button mode wizard steps — 30 minutes each
+  BM_EXPENSE_DESC: 30 * 60,
+  BM_EXPENSE_AMOUNT: 30 * 60,
+  BM_EXPENSE_MEMBERS: 30 * 60,
+  BM_EXPENSE_CUSTOM_AMOUNT: 30 * 60,
+  BM_PAYMENT_MEMBER: 30 * 60,
+  BM_PAYMENT_AMOUNT: 30 * 60,
+  BM_IOWE_CREDITOR: 30 * 60,
+  BM_IOWE_DESC: 30 * 60,
+  BM_IOWE_AMOUNT: 30 * 60,
+  BM_BROADCAST_MSG: 30 * 60,
+  BM_ITEM_QUANTITY: 30 * 60,
+  BM_ITEM_ADD_NAME: 30 * 60,
+  BM_NICKNAME: 30 * 60,
+  BM_AWAITING_PROOF: 30 * 60,
 } as const;
 
 type ActionType = keyof typeof EXPIRY;
@@ -86,6 +101,38 @@ export const pendingActionRepo = {
       .deleteFrom('pending_actions')
       .where('telegram_id', '=', telegramId)
       .where('used_at', 'is', null)
+      .execute();
+  },
+
+  /**
+   * Update the payload of an existing pending action (keeps same id/token/type).
+   * Used by button mode wizards to advance state without recreating.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async updatePayload(id: string, newPayload: any): Promise<void> {
+    await db
+      .updateTable('pending_actions')
+      .set({ payload_json: JSON.stringify(newPayload) })
+      .where('id', '=', id)
+      .execute();
+  },
+
+  /**
+   * Update both type and payload of an existing pending action.
+   * Extends expiry to match new type. Used by button mode wizards.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async updateTypeAndPayload(id: string, newType: ActionType, newPayload: any): Promise<void> {
+    const now = Math.floor(Date.now() / 1000);
+    const expiresAt = now + EXPIRY[newType];
+    await db
+      .updateTable('pending_actions')
+      .set({
+        type: newType,
+        payload_json: JSON.stringify(newPayload),
+        expires_at: expiresAt,
+      })
+      .where('id', '=', id)
       .execute();
   },
 

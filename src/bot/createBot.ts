@@ -1,4 +1,4 @@
-import { Telegraf, Context } from 'telegraf';
+import { Telegraf, Context, Markup } from 'telegraf';
 import { message } from 'telegraf/filters';
 import { config } from '../utils/config';
 import { logger } from '../utils/logger';
@@ -22,8 +22,11 @@ import * as broadcastFlow from '../flows/broadcast';
 import { handleAttachment } from '../flows/handleProof';
 import { joinRequestKeyboard } from './keyboards/joinKeyboard';
 import { languageKeyboard } from './keyboards/languageKeyboard';
+import { mainReplyKeyboard } from './keyboards/replyKeyboard';
 import { escapeMd } from '../domain/money';
 import { t, getLang, LANG_NAMES, type Lang } from '../i18n';
+import { handleButtonModeText } from './buttonMode/router';
+import * as broadcastWizard from './buttonMode/broadcastWizard';
 import type { ProofInfo } from '../types';
 
 async function upsertAndLoadLang(ctx: Context): Promise<void> {
@@ -72,6 +75,9 @@ export function createBot(): Telegraf {
     }
 
     // Language already set — show welcome
+    const user = await userRepo.getById(ctx.from.id);
+    const mode = user?.mode ?? 'button';
+
     await ctx.reply(t(lang, 'welcome') + t(lang, 'helpText'), {
       parse_mode: 'Markdown',
       reply_markup: {
@@ -80,6 +86,16 @@ export function createBot(): Telegraf {
         ],
       },
     });
+
+    // Send reply keyboard if in button mode
+    if (mode === 'button') {
+      const activeHousehold = user?.active_household_id
+        ? await householdRepo.getById(user.active_household_id)
+        : null;
+      await ctx.reply('👇', {
+        reply_markup: mainReplyKeyboard(activeHousehold?.name ?? null).reply_markup,
+      });
+    }
 
     // Deliver any pending notifications
     await deliverPending(bot, ctx.from.id);
@@ -123,12 +139,23 @@ export function createBot(): Telegraf {
     const text = ctx.message.text.trim();
     const telegramId = ctx.from.id;
 
-    // Cancel command
+    // Cancel command — works in both modes
     if (text.toLowerCase() === 'cancel' || text === '/cancel') {
       await pendingActionRepo.clearForUser(telegramId);
       await ctx.reply(t(lang, 'cancel'));
       return;
     }
+
+    // Check user mode
+    const user = await userRepo.getById(telegramId);
+    const mode = user?.mode ?? 'button';
+
+    if (mode === 'button') {
+      await handleButtonModeText(ctx, text, telegramId, lang, bot);
+      return;
+    }
+
+    // ── LLM mode ──────────────────────────────────────────────────────────────
 
     // State machine: check for pending action
     const pending = await pendingActionRepo.getActive(telegramId);
@@ -190,7 +217,7 @@ export function createBot(): Telegraf {
         await ctx.reply(t(lang, 'helpText'), { parse_mode: 'Markdown' });
         break;
       case 'UNKNOWN':
-        await ctx.reply(t(lang, 'unknownIntent'));
+        await ctx.reply(t(lang, 'unknownIntent') + t(lang, 'llmSwitchTip'), { parse_mode: 'Markdown' });
         break;
     }
   });
@@ -203,6 +230,15 @@ export function createBot(): Telegraf {
       fileId: photo.file_id,
       fileUniqueId: photo.file_unique_id,
     };
+
+    // Button mode: check if pending broadcast message (to allow photo+caption broadcast)
+    const telegramId = ctx.from.id;
+    const pending = await pendingActionRepo.getActive(telegramId);
+    if (pending?.type === 'BM_BROADCAST_MSG') {
+      await broadcastWizard.onPhoto(ctx, proof, ctx.message.caption, pending, bot);
+      return;
+    }
+
     await handleAttachment(ctx, proof, ctx.message.caption, bot);
   });
 

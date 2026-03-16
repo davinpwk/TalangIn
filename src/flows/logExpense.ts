@@ -101,7 +101,8 @@ export async function proceedWithProof(
 async function showPreview(
   ctx: Context,
   payload: Omit<ConfirmExpensePayload, 'flow'>,
-  lang: ReturnType<typeof getLang>
+  lang: ReturnType<typeof getLang>,
+  isLlm = true
 ): Promise<void> {
   const telegramId = ctx.from!.id;
   const splitLines = payload.splits
@@ -114,14 +115,18 @@ async function showPreview(
     })
     .join('\n');
 
-  const preview = t(lang, 'expensePreview', {
+  let preview = t(lang, 'expensePreview', {
     description: escapeMd(payload.description),
     amount: formatMoney(payload.amountCentsTotal, payload.currency),
     householdName: escapeMd(payload.householdName),
     splits: splitLines,
   });
 
-  const fullPayload: ConfirmExpensePayload = { flow: 'EXPENSE', ...payload };
+  if (isLlm) {
+    preview += t(lang, 'llmReviewWarning');
+  }
+
+  const fullPayload: ConfirmExpensePayload = { flow: 'EXPENSE', ...payload, isLlm };
   const pending = await pendingActionRepo.create(telegramId, 'AWAITING_CONFIRM', fullPayload);
 
   await ctx.reply(preview, {

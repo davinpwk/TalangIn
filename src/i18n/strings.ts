@@ -141,6 +141,7 @@ const en = {
   // System
   rateLimited: '⏳ Slow down! You are sending messages too quickly.',
   unknownIntent: "🤔 I didn't understand that. Type /help to see what I can do.",
+  llmSwitchTip: '\n\n💡 _Tip: Switch to Button Mode in /settings for a more reliable experience._',
   awaitingProofReminder:
     '📎 I\'m waiting for your invoice/proof. Please send it as a photo or document.\n\nType "cancel" to abort.',
   awaitingConfirmReminder: '👆 Please use the buttons above to confirm or cancel.',
@@ -156,6 +157,96 @@ const en = {
   attachmentNoCaption:
     "I received your file but couldn't determine its purpose from the caption. " +
     'Please describe the expense or payment in your next message.',
+
+  // LLM disclaimer
+  llmReviewWarning: '\n\n🤖 _Interpreted by AI — review carefully before confirming._',
+
+  // Nickname
+  nicknamePrompt: '✏️ Type your new nickname (this is how others see you):',
+  nicknameSet: '✅ Nickname set to *{nickname}*.',
+
+  // Mode switching
+  switchToLlmWarning:
+    `⚠️ *Switching to LLM (AI) Mode*\n\n` +
+    `In LLM mode, you interact via free text and the AI interprets your messages. ` +
+    `Results may occasionally be inaccurate.\n\n` +
+    `The reply keyboard will be hidden.`,
+  llmModeConfirmBtn: '✅ I understand, switch to LLM Mode',
+  llmModeBackBtn: '❌ Cancel',
+  modeChangedToLlm: '🤖 Switched to LLM Mode. Send a message to get started.',
+  modeChangedToButton: '🔘 Switched to Button Mode.',
+  alreadyButtonMode: 'You are already in Button Mode.',
+  alreadyLlmMode: 'You are already in LLM Mode.',
+
+  // Household picker
+  pickHousehold: '🏠 Which household would you like to use?',
+  noHouseholds: 'You are not in any household. Create or join one first.',
+  activeHouseholdSet: '✅ Now working in: *{name}*',
+  changeHousehold: '🔄 Change Household',
+
+  // I Owe
+  iOweCreditorPrompt: '👤 Who do you owe? Select a member:',
+  iOweDescPrompt: '📝 What is this debt for? (description)',
+  iOweAmountPrompt: '💰 How much do you owe? (enter a number)',
+  iOwePreview:
+    `🤝 *I Owe — Preview*\n\n` +
+    `You owe: *{creditor}*\n` +
+    `Amount: *{amount}*\n` +
+    `For: _{description}_\n` +
+    `Household: *{householdName}*`,
+  iOweConfirmed: '✅ Debt recorded. *{creditor}* has been notified.',
+  iOweNotification:
+    '🤝 *{debtor}* says they owe you *{amount}* for _{description}_ (Household: {householdName})',
+
+  // Item Tracker
+  itemTrackerMenu: '📦 *Item Tracker*\nWhat would you like to do?',
+  viewCounts: '👀 View Counts',
+  noCounts: '_No usage recorded yet._',
+  logUsageBtn: '➕ Log Usage',
+  itemPick: '📦 Select an item:',
+  quantityPrompt: '🔢 How many? (enter a whole number)',
+  usageRecorded: '✅ Recorded *{quantity}* × {item}.',
+  manageItems: '⚙️ Manage Items',
+  addItemPrompt: '📝 Enter the name of the new item:',
+  itemAdded: '✅ Item added: *{name}*',
+  removeItemPick: '🗑 Select item to remove:',
+  itemRemoved: '✅ Item removed: *{name}*',
+  resetPick: '🔄 Select item to reset counts:',
+  resetConfirmed: '✅ Counts reset for *{name}*.',
+  noItems: '_No items yet. Add one via Manage Items._',
+  ownerOnlyAction: '🔒 Only the household owner can do this.',
+
+  // Button mode wizard prompts
+  descPrompt: '📝 What was the expense for? (description)',
+  amountPrompt: '💰 What is the total amount? (e.g. 50 or 50.50)',
+  splitTypePick: '⚖️ How should this be split?',
+  splitEvenBtn: '➗ Evenly',
+  splitCustomBtn: '🔢 Custom amounts',
+  membersPick: '👥 Select members to include in the split (tap to toggle):',
+  membersDoneBtn: '✅ Done',
+  customAmountPrompt: '💰 How much does *{member}* owe? (enter a number)',
+  creditorPick: '👤 Who did you pay?',
+  fullOrCustom: '💳 How much are you paying?',
+  fullPayBtn: '💯 Full balance ({amount})',
+  customPayBtn: '✏️ Custom amount',
+  payAmountPrompt: '💰 Enter the amount:',
+  proofPrompt: '📎 Please send a photo or document as proof (receipt / transfer screenshot):',
+  noDebtToMember: 'You have no recorded debt to {name} in this household.',
+
+  // Settings menu
+  settingsMenu: '⚙️ *Settings*\nNickname: *{nickname}*\nMode: *{mode}*\nLanguage: *{language}*',
+  settingsNicknameBtn: '✏️ Set Nickname',
+  settingsLangBtn: '🌐 Change Language',
+  settingsSwitchLlmBtn: '🤖 Switch to LLM Mode',
+  settingsSwitchButtonBtn: '🔘 Switch to Button Mode',
+  buttonModeUseButtons: '👇 Use the buttons below to navigate.',
+  broadcastPhotoCaption: '📢 *Broadcast from {sender}* (Household: {householdName})',
+  broadcastAddCaption: '⚠️ Please add a caption as your broadcast message.',
+  broadcastPhotoPreview:
+    `📢 *Broadcast Preview*\n\n` +
+    `Household: *{householdName}*\n` +
+    `Recipients: *{count}* member(s)\n\n` +
+    `📷 Photo with caption:\n_{message}_`,
 };
 
 const id: typeof en = {
@@ -300,6 +391,7 @@ const id: typeof en = {
   // System
   rateLimited: '⏳ Pelan-pelan! Kamu mengirim pesan terlalu cepat.',
   unknownIntent: '🤔 Aku tidak mengerti itu. Ketik /help untuk melihat yang bisa aku lakukan.',
+  llmSwitchTip: '\n\n💡 _Tips: Ganti ke Mode Tombol di /settings untuk pengalaman yang lebih andal._',
   awaitingProofReminder:
     '📎 Aku sedang menunggu faktur/buktimu. Kirimkan sebagai foto atau dokumen.\n\nKetik "cancel" untuk membatalkan.',
   awaitingConfirmReminder: '👆 Gunakan tombol di atas untuk mengkonfirmasi atau membatalkan.',
@@ -315,6 +407,96 @@ const id: typeof en = {
   attachmentNoCaption:
     'Aku menerima file kamu tapi tidak bisa menentukan tujuannya dari caption. ' +
     'Tolong jelaskan pengeluaran atau pembayarannya di pesan berikutnya.',
+
+  // LLM disclaimer
+  llmReviewWarning: '\n\n🤖 _Ditafsirkan oleh AI — periksa dengan teliti sebelum mengkonfirmasi._',
+
+  // Nickname
+  nicknamePrompt: '✏️ Ketik nama panggilan baru kamu (begini orang lain melihat kamu):',
+  nicknameSet: '✅ Nama panggilan diatur ke *{nickname}*.',
+
+  // Mode switching
+  switchToLlmWarning:
+    `⚠️ *Beralih ke Mode LLM (AI)*\n\n` +
+    `Dalam mode LLM, kamu berinteraksi melalui teks bebas dan AI menafsirkan pesanmu. ` +
+    `Hasilnya terkadang mungkin tidak akurat.\n\n` +
+    `Keyboard tombol akan disembunyikan.`,
+  llmModeConfirmBtn: '✅ Saya mengerti, beralih ke Mode LLM',
+  llmModeBackBtn: '❌ Batal',
+  modeChangedToLlm: '🤖 Beralih ke Mode LLM. Kirim pesan untuk mulai.',
+  modeChangedToButton: '🔘 Beralih ke Mode Tombol.',
+  alreadyButtonMode: 'Kamu sudah dalam Mode Tombol.',
+  alreadyLlmMode: 'Kamu sudah dalam Mode LLM.',
+
+  // Household picker
+  pickHousehold: '🏠 Rumah tangga mana yang ingin kamu gunakan?',
+  noHouseholds: 'Kamu belum bergabung ke rumah tangga manapun. Buat atau bergabung dulu.',
+  activeHouseholdSet: '✅ Sekarang menggunakan: *{name}*',
+  changeHousehold: '🔄 Ganti Rumah Tangga',
+
+  // I Owe
+  iOweCreditorPrompt: '👤 Kamu berutang ke siapa? Pilih anggota:',
+  iOweDescPrompt: '📝 Untuk apa utang ini? (deskripsi)',
+  iOweAmountPrompt: '💰 Berapa jumlah utangmu? (masukkan angka)',
+  iOwePreview:
+    `🤝 *I Owe — Pratinjau*\n\n` +
+    `Kamu berutang ke: *{creditor}*\n` +
+    `Jumlah: *{amount}*\n` +
+    `Untuk: _{description}_\n` +
+    `Rumah tangga: *{householdName}*`,
+  iOweConfirmed: '✅ Utang tercatat. *{creditor}* telah diberitahu.',
+  iOweNotification:
+    '🤝 *{debtor}* bilang mereka berutang *{amount}* ke kamu untuk _{description}_ (Rumah tangga: {householdName})',
+
+  // Item Tracker
+  itemTrackerMenu: '📦 *Pelacak Barang*\nMau ngapain?',
+  viewCounts: '👀 Lihat Hitungan',
+  noCounts: '_Belum ada penggunaan yang tercatat._',
+  logUsageBtn: '➕ Catat Penggunaan',
+  itemPick: '📦 Pilih barang:',
+  quantityPrompt: '🔢 Berapa banyak? (masukkan angka bulat)',
+  usageRecorded: '✅ Tercatat *{quantity}* × {item}.',
+  manageItems: '⚙️ Kelola Barang',
+  addItemPrompt: '📝 Masukkan nama barang baru:',
+  itemAdded: '✅ Barang ditambahkan: *{name}*',
+  removeItemPick: '🗑 Pilih barang yang ingin dihapus:',
+  itemRemoved: '✅ Barang dihapus: *{name}*',
+  resetPick: '🔄 Pilih barang untuk direset hitungannya:',
+  resetConfirmed: '✅ Hitungan direset untuk *{name}*.',
+  noItems: '_Belum ada barang. Tambahkan melalui Kelola Barang._',
+  ownerOnlyAction: '🔒 Hanya pemilik rumah tangga yang bisa melakukan ini.',
+
+  // Button mode wizard prompts
+  descPrompt: '📝 Untuk apa pengeluaran ini? (deskripsi)',
+  amountPrompt: '💰 Berapa total jumlahnya? (misal 50 atau 50.50)',
+  splitTypePick: '⚖️ Bagaimana cara membaginya?',
+  splitEvenBtn: '➗ Merata',
+  splitCustomBtn: '🔢 Jumlah kustom',
+  membersPick: '👥 Pilih anggota yang ikut dalam pembagian (ketuk untuk toggle):',
+  membersDoneBtn: '✅ Selesai',
+  customAmountPrompt: '💰 Berapa yang harus dibayar *{member}*? (masukkan angka)',
+  creditorPick: '👤 Kamu bayar ke siapa?',
+  fullOrCustom: '💳 Berapa yang ingin kamu bayar?',
+  fullPayBtn: '💯 Saldo penuh ({amount})',
+  customPayBtn: '✏️ Jumlah kustom',
+  payAmountPrompt: '💰 Masukkan jumlahnya:',
+  proofPrompt: '📎 Kirimkan foto atau dokumen sebagai bukti (struk / screenshot transfer):',
+  noDebtToMember: 'Kamu tidak punya utang ke {name} di rumah tangga ini.',
+
+  // Settings menu
+  settingsMenu: '⚙️ *Pengaturan*\nNama panggilan: *{nickname}*\nMode: *{mode}*\nBahasa: *{language}*',
+  settingsNicknameBtn: '✏️ Atur Nama Panggilan',
+  settingsLangBtn: '🌐 Ganti Bahasa',
+  settingsSwitchLlmBtn: '🤖 Beralih ke Mode LLM',
+  settingsSwitchButtonBtn: '🔘 Beralih ke Mode Tombol',
+  buttonModeUseButtons: '👇 Gunakan tombol di bawah untuk navigasi.',
+  broadcastPhotoCaption: '📢 *Siaran dari {sender}* (Rumah tangga: {householdName})',
+  broadcastAddCaption: '⚠️ Tambahkan caption sebagai pesan siaran kamu.',
+  broadcastPhotoPreview:
+    `📢 *Pratinjau Siaran*\n\n` +
+    `Rumah tangga: *{householdName}*\n` +
+    `Penerima: *{count}* anggota\n\n` +
+    `📷 Foto dengan caption:\n_{message}_`,
 };
 
 export const strings = { en, id };

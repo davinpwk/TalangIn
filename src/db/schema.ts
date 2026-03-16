@@ -9,6 +9,9 @@ export interface UsersTable {
   last_name: string | null;
   started_at: number;
   language: string | null;
+  nickname: string | null;
+  mode: string | null;
+  active_household_id: string | null;
 }
 
 export interface HouseholdsTable {
@@ -38,11 +41,28 @@ export interface JoinRequestsTable {
   decided_by: number | null;
 }
 
+export interface ItemsTable {
+  id: string;
+  household_id: string;
+  name: string;
+  created_by_telegram_id: number;
+  created_at: number;
+  is_active: number;
+}
+
+export interface ItemUsageLogTable {
+  id: string;
+  item_id: string;
+  user_telegram_id: number;
+  quantity: number;
+  logged_at: number;
+}
+
 export interface TransactionsTable {
   id: string;
   household_id: string;
   actor_telegram_id: number;
-  type: 'EXPENSE' | 'PAYMENT';
+  type: 'EXPENSE' | 'PAYMENT' | 'DEBT_LOG';
   description: string;
   currency: string;
   amount_cents_total: number;
@@ -87,4 +107,6 @@ export interface Database {
   debts_ledger: DebtsLedgerTable;
   pending_actions: PendingActionsTable;
   pending_notifications: PendingNotificationsTable;
+  items: ItemsTable;
+  item_usage_log: ItemUsageLogTable;
 }

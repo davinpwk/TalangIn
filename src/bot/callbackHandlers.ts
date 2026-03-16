@@ -8,17 +8,21 @@ import { executeExpense } from '../flows/logExpense';
 import { executePayment } from '../flows/logPayment';
 import { executeKick } from '../flows/kickMember';
 import { executeBroadcast } from '../flows/broadcast';
+import { executeIOwe } from '../flows/iOwe';
 import * as joinFlow from '../flows/joinHousehold';
 import * as viewBalancesFlow from '../flows/viewBalances';
 import { t, getLang, LANG_NAMES, type Lang } from '../i18n';
 import { languageKeyboard } from './keyboards/languageKeyboard';
+import { mainReplyKeyboard } from './keyboards/replyKeyboard';
 import { escapeMd } from '../domain/money';
+import { handleButtonModeCallback } from './buttonMode/callbackHandler';
 import type {
   ConfirmPayload,
   ConfirmExpensePayload,
   ConfirmPaymentPayload,
   ConfirmKickPayload,
   ConfirmBroadcastPayload,
+  ConfirmIOwePayload,
   AwaitingHouseholdPayload,
 } from '../types';
 import type { LogExpenseIntent, LogPaymentIntent, BroadcastIntent } from '../llm/schemas';
@@ -36,7 +40,9 @@ export async function handleCallback(ctx: Context, bot: Telegraf): Promise<void>
   logger.debug({ data, userId: ctx.from?.id }, 'Callback received');
 
   try {
-    if (data.startsWith('lang_set:')) {
+    if (data.startsWith('bm:')) {
+      await handleButtonModeCallback(ctx, data, bot);
+    } else if (data.startsWith('lang_set:')) {
       await handleLangSet(ctx, data);
     } else if (data.startsWith('cb:join:approve:')) {
       await joinFlow.handleApprove(ctx, data, bot);
@@ -89,6 +95,18 @@ async function handleLangSet(ctx: Context, data: string): Promise<void> {
       parse_mode: 'Markdown',
       reply_markup: undefined,
     });
+
+    // Send reply keyboard for button mode (default)
+    const updatedUser = await userRepo.getById(telegramId);
+    const mode = updatedUser?.mode ?? 'button';
+    if (mode === 'button') {
+      const activeHousehold = updatedUser?.active_household_id
+        ? await householdRepo.getById(updatedUser.active_household_id)
+        : null;
+      await ctx.reply('👇', {
+        reply_markup: mainReplyKeyboard(activeHousehold?.name ?? null).reply_markup,
+      });
+    }
   } else {
     // From /settings — just confirm the change
     await ctx.editMessageText(
@@ -134,6 +152,9 @@ async function handleConfirm(ctx: Context, data: string, bot: Telegraf): Promise
       break;
     case 'BROADCAST':
       await executeBroadcast(ctx, payload as ConfirmBroadcastPayload, bot);
+      break;
+    case 'IOWE':
+      await executeIOwe(ctx, payload as ConfirmIOwePayload, bot);
       break;
   }
 }

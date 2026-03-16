@@ -36,6 +36,29 @@ export async function notifyUser(
 }
 
 /**
+ * Try to send a photo message to a user proactively.
+ * Falls back to text notification on failure.
+ */
+export async function notifyUserWithPhoto(
+  bot: Telegraf,
+  targetTelegramId: number,
+  photoFileId: string,
+  caption: string,
+  ctx?: Context
+): Promise<void> {
+  try {
+    await bot.telegram.sendPhoto(targetTelegramId, photoFileId, {
+      caption,
+      parse_mode: 'Markdown',
+    });
+    logger.debug({ targetTelegramId }, 'Photo notification sent');
+  } catch (err) {
+    logger.warn({ err, targetTelegramId }, 'Could not send photo DM; falling back to text');
+    await notifyUser(bot, targetTelegramId, caption + '\n_[📷 photo attached — see original]_', ctx);
+  }
+}
+
+/**
  * Deliver any stored pending notifications to a user (called on /start).
  */
 export async function deliverPending(

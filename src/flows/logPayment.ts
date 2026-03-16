@@ -92,13 +92,15 @@ export async function handle(
   }
 
   // 5. Show preview
-  const preview =
+  let preview =
     t(lang, 'paymentPreview', {
       creditor: creditorRef,
       amount: formatMoney(amountCents, currency),
       householdName: escapeMd(household.name),
       description: escapeMd(intent.description ?? 'Payment'),
     }) + overpaymentWarning;
+
+  preview += t(lang, 'llmReviewWarning');
 
   const paymentPayload: ConfirmPaymentPayload = {
     flow: 'PAYMENT',
@@ -113,6 +115,7 @@ export async function handle(
     description: intent.description ?? 'Payment',
     proofFileId: proof.fileId,
     proofFileUniqueId: proof.fileUniqueId,
+    isLlm: true,
   };
 
   const pending = await pendingActionRepo.create(telegramId, 'AWAITING_CONFIRM', paymentPayload);

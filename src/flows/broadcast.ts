@@ -5,7 +5,7 @@ import { pendingActionRepo } from '../db/repos/pendingActionRepo';
 import { userRepo } from '../db/repos/userRepo';
 import { confirmKeyboard } from '../bot/keyboards/confirmKeyboard';
 import { householdSelectionKeyboard } from '../bot/keyboards/householdKeyboard';
-import { notifyUser } from '../utils/notify';
+import { notifyUser, notifyUserWithPhoto } from '../utils/notify';
 import { escapeMd } from '../domain/money';
 import { t, getLang } from '../i18n';
 import type { BroadcastIntent } from '../llm/schemas';
@@ -72,16 +72,27 @@ export async function executeBroadcast(
 
   let sent = 0;
   for (const recipientId of payload.recipientIds) {
-    await notifyUser(
-      bot,
-      recipientId,
-      t(null, 'broadcastReceived', {
+    const recipient = await userRepo.getById(recipientId);
+    const recipientLang = (recipient?.language as import('../i18n').Lang | null) ?? null;
+
+    if (payload.photoFileId) {
+      const caption = t(recipientLang, 'broadcastPhotoCaption', {
         sender: actorRef,
         householdName: escapeMd(payload.householdName),
-        message: payload.message,
-      }),
-      ctx
-    );
+      }) + `\n\n${escapeMd(payload.message)}`;
+      await notifyUserWithPhoto(bot, recipientId, payload.photoFileId, caption, ctx);
+    } else {
+      await notifyUser(
+        bot,
+        recipientId,
+        t(recipientLang, 'broadcastReceived', {
+          sender: actorRef,
+          householdName: escapeMd(payload.householdName),
+          message: payload.message,
+        }),
+        ctx
+      );
+    }
     sent++;
   }
 
