@@ -263,6 +263,15 @@ const en = {
   settingsSwitchLlmBtn: '🤖 Switch to LLM Mode',
   settingsSwitchButtonBtn: '🔘 Switch to Button Mode',
   buttonModeUseButtons: '👇 Use the buttons below to navigate.',
+  // Weekly summary
+  weeklySummaryHeader: '📅 *Weekly Summary — {householdName}*\n',
+  weeklySummaryAllSettled: '_No outstanding debts — all settled up!_ ✅\n',
+  weeklySummaryYouOwe: '💸 *You owe:*\n',
+  weeklySummaryYouAreOwed: '💰 *You are owed:*\n',
+  weeklySummaryItemHeader: '📦 *Item Usage (last 7 days):*\n',
+  weeklySummaryNoItems: '_No item usage recorded this week._\n',
+  weeklySummaryFooter: '💡 _Tap /start to see your full balances._',
+
   broadcastPhotoCaption: '📢 *Broadcast from {sender}* (Household: {householdName})',
   broadcastAddCaption: '⚠️ Please add a caption as your broadcast message.',
   broadcastPhotoPreview:
@@ -536,6 +545,15 @@ const id: typeof en = {
   settingsSwitchLlmBtn: '🤖 Beralih ke Mode LLM',
   settingsSwitchButtonBtn: '🔘 Beralih ke Mode Tombol',
   buttonModeUseButtons: '👇 Gunakan tombol di bawah untuk navigasi.',
+  // Weekly summary
+  weeklySummaryHeader: '📅 *Ringkasan Mingguan — {householdName}*\n',
+  weeklySummaryAllSettled: '_Tidak ada utang — semua lunas!_ ✅\n',
+  weeklySummaryYouOwe: '💸 *Kamu berutang:*\n',
+  weeklySummaryYouAreOwed: '💰 *Orang lain berutang ke kamu:*\n',
+  weeklySummaryItemHeader: '📦 *Penggunaan Barang (7 hari terakhir):*\n',
+  weeklySummaryNoItems: '_Belum ada penggunaan barang minggu ini._\n',
+  weeklySummaryFooter: '💡 _Ketuk /start untuk melihat saldo lengkap kamu._',
+
   broadcastPhotoCaption: '📢 *Siaran dari {sender}* (Rumah tangga: {householdName})',
   broadcastAddCaption: '⚠️ Tambahkan caption sebagai pesan siaran kamu.',
   broadcastPhotoPreview:

@@ -81,6 +81,14 @@ export const userRepo = {
       .execute();
   },
 
+  async getAllWithLanguage() {
+    return db
+      .selectFrom('users')
+      .selectAll()
+      .where('language', 'is not', null)
+      .execute();
+  },
+
   async setLastSeenVersion(telegramId: number, version: string): Promise<void> {
     await db
       .updateTable('users')

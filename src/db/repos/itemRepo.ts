@@ -99,6 +99,43 @@ export const itemRepo = {
     return result;
   },
 
+  async getCountsForHouseholdSince(householdId: string, since: number): Promise<ItemCount[]> {
+    const items = await this.getItemsForHousehold(householdId);
+    if (items.length === 0) return [];
+
+    const logs = await db
+      .selectFrom('item_usage_log as ul')
+      .innerJoin('items as i', 'i.id', 'ul.item_id')
+      .leftJoin('users as u', 'u.telegram_id', 'ul.user_telegram_id')
+      .select([
+        'i.id as item_id',
+        'i.name as item_name',
+        'ul.user_telegram_id',
+        'u.nickname',
+        'u.username',
+        'u.first_name',
+        sql<number>`sum(ul.quantity)`.as('total_quantity'),
+      ])
+      .where('i.household_id', '=', householdId)
+      .where('i.is_active', '=', 1)
+      .where('ul.logged_at', '>=', since)
+      .groupBy(['i.id', 'ul.user_telegram_id'])
+      .execute();
+
+    return items.map((item) => {
+      const itemLogs = logs.filter((l) => l.item_id === item.id);
+      return {
+        itemId: item.id,
+        itemName: item.name,
+        counts: itemLogs.map((l) => ({
+          telegramId: l.user_telegram_id,
+          displayName: (l.nickname as string | null) ?? (l.username ? `@${l.username}` : (l.first_name as string) ?? `user ${l.user_telegram_id}`),
+          quantity: Number(l.total_quantity),
+        })),
+      };
+    });
+  },
+
   async resetItemCounts(itemId: string): Promise<void> {
     await db
       .deleteFrom('item_usage_log')
