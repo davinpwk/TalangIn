@@ -4,9 +4,8 @@ import { debtRepo } from '../db/repos/debtRepo';
 import { balanceNavKeyboard } from '../bot/keyboards/householdKeyboard';
 import { formatMoney, escapeMd } from '../domain/money';
 import { t, getLang } from '../i18n';
-import type { ViewBalancesIntent } from '../llm/schemas';
 
-export async function handle(ctx: Context, intent: ViewBalancesIntent): Promise<void> {
+export async function handleView(ctx: Context): Promise<void> {
   const telegramId = ctx.from!.id;
   const lang = getLang(ctx);
   const households = await householdRepo.getActiveHouseholdsForUser(telegramId);
@@ -16,14 +15,7 @@ export async function handle(ctx: Context, intent: ViewBalancesIntent): Promise<
     return;
   }
 
-  let targetHousehold = households[0];
-  if (intent.household_hint && households.length > 1) {
-    const hint = intent.household_hint.toLowerCase();
-    const match = households.find((h) => h.name.toLowerCase().includes(hint));
-    if (match) targetHousehold = match;
-  }
-
-  await sendBalanceView(ctx, telegramId, targetHousehold, households);
+  await sendBalanceView(ctx, telegramId, households[0], households);
 }
 
 export async function handleHouseholdSelect(ctx: Context, data: string): Promise<void> {

@@ -13,7 +13,7 @@ import * as iOweWizard from './iOweWizard';
 import * as broadcastWizard from './broadcastWizard';
 import * as itemTrackerWizard from './itemTrackerWizard';
 import * as settingsWizard from './settingsWizard';
-import { showHouseholdPicker, onCreateHouseholdName, onJoinHouseholdCode } from './household';
+import { showHouseholdMenu, showHouseholdPicker, onCreateHouseholdName, onJoinHouseholdCode } from './household';
 
 export async function handleButtonModeText(
   ctx: Context,
@@ -104,8 +104,7 @@ export async function handleButtonModeText(
       await paymentWizard.start(ctx, telegramId, activeHouseholdId!);
       return;
     case '📊 View Balances': {
-      const fakeIntent = { intent: 'VIEW_BALANCES' as const, household_hint: undefined };
-      await viewBalancesFlow.handle(ctx, fakeIntent);
+      await viewBalancesFlow.handleView(ctx);
       return;
     }
     case '🤝 I Owe':
@@ -122,7 +121,7 @@ export async function handleButtonModeText(
       return;
     default:
       if (text.startsWith('🏠')) {
-        await showHouseholdPicker(ctx, telegramId);
+        await showHouseholdMenu(ctx, telegramId);
         return;
       }
       await ctx.reply(t(lang, 'buttonModeUseButtons'), { parse_mode: 'Markdown' });

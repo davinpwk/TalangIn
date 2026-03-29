@@ -6,7 +6,7 @@ import { executeExpense } from '../../flows/logExpense';
 import { executePayment } from '../../flows/logPayment';
 import { executeIOwe } from '../../flows/iOwe';
 import { t, getLang } from '../../i18n';
-import { handleHouseholdSelect, startCreateHousehold, startJoinHousehold, onCreateHouseholdCurrency } from './household';
+import { handleHouseholdSelect, showHouseholdPicker, showAllDebts, showJoinCode, showKickPicker, showKickConfirm, executeKick, startCreateHousehold, startJoinHousehold, onCreateHouseholdCurrency } from './household';
 import * as expenseWizard from './expenseWizard';
 import * as paymentWizard from './paymentWizard';
 import * as itemTrackerWizard from './itemTrackerWizard';
@@ -31,7 +31,7 @@ export async function handleButtonModeCallback(
     return;
   }
 
-  // bm:hh:create / bm:hh:join / bm:hh:currency:<CURR>
+  // bm:hh:* — household management actions
   if (data === 'bm:hh:create') {
     await startCreateHousehold(ctx, telegramId);
     return;
@@ -40,9 +40,38 @@ export async function handleButtonModeCallback(
     await startJoinHousehold(ctx, telegramId);
     return;
   }
+  if (data === 'bm:hh:pick') {
+    await ctx.answerCbQuery();
+    await showHouseholdPicker(ctx, telegramId);
+    return;
+  }
+  if (data === 'bm:hh:alldebt') {
+    await showAllDebts(ctx, telegramId);
+    return;
+  }
+  if (data === 'bm:hh:joincode') {
+    await showJoinCode(ctx, telegramId);
+    return;
+  }
+  if (data === 'bm:hh:kick') {
+    await showKickPicker(ctx, telegramId);
+    return;
+  }
   if (data.startsWith('bm:hh:currency:')) {
     const currency = data.slice('bm:hh:currency:'.length);
     await onCreateHouseholdCurrency(ctx, currency);
+    return;
+  }
+
+  // bm:kick:<memberId> / bm:kick:confirm:<memberId>
+  if (data.startsWith('bm:kick:confirm:')) {
+    const memberId = parseInt(data.slice('bm:kick:confirm:'.length));
+    await executeKick(ctx, memberId, bot);
+    return;
+  }
+  if (data.startsWith('bm:kick:')) {
+    const memberId = parseInt(data.slice('bm:kick:'.length));
+    await showKickConfirm(ctx, memberId);
     return;
   }
 
@@ -177,32 +206,13 @@ export async function handleButtonModeCallback(
       case 'lang':
         await settingsWizard.showLangPicker(ctx);
         break;
-      case 'switch_llm':
-        await settingsWizard.showLlmWarning(ctx);
-        break;
-      case 'switch_button':
-        await settingsWizard.switchToButton(ctx, telegramId);
-        break;
     }
-    return;
-  }
-
-  // bm:mode_confirm:llm
-  if (data === 'bm:mode_confirm:llm') {
-    await settingsWizard.confirmSwitchToLlm(ctx, telegramId);
     return;
   }
 
   // bm:cancel — universal cancel for any wizard step
   if (data === 'bm:cancel') {
     await pendingActionRepo.clearForUser(telegramId);
-    await ctx.answerCbQuery('Cancelled.');
-    await ctx.editMessageText(t(lang, 'cancelledAction'), { reply_markup: undefined });
-    return;
-  }
-
-  // bm:mode_cancel
-  if (data === 'bm:mode_cancel') {
     await ctx.answerCbQuery('Cancelled.');
     await ctx.editMessageText(t(lang, 'cancelledAction'), { reply_markup: undefined });
     return;

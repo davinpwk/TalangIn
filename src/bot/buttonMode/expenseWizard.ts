@@ -281,7 +281,6 @@ async function showExpensePreview(
     currency: payload.currency,
     amountCentsTotal: payload.totalCents!,
     splits,
-    isLlm: false,
   };
 
   const bmProofPayload: BmAwaitingProofPayload = {

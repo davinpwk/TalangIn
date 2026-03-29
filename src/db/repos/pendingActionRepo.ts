@@ -5,7 +5,6 @@ import { generateId, generateToken } from '../../domain/money';
 const EXPIRY = {
   AWAITING_PROOF: 30 * 60,      // 30 minutes
   AWAITING_CONFIRM: 10 * 60,    // 10 minutes
-  AWAITING_HOUSEHOLD: 5 * 60,   // 5 minutes
   // Button mode wizard steps — 30 minutes each
   BM_EXPENSE_DESC: 30 * 60,
   BM_EXPENSE_AMOUNT: 30 * 60,

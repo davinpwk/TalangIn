@@ -10,21 +10,6 @@ export interface SplitEntry {
   amountCents: number;
 }
 
-// Payloads stored in pending_actions.payload_json
-export interface AwaitingProofPayload {
-  intent: 'LOG_EXPENSE' | 'LOG_PAYMENT';
-  // The raw classified intent from LLM
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any;
-}
-
-export interface AwaitingHouseholdPayload {
-  intent: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any;
-  proof: ProofInfo | null;
-}
-
 export interface ConfirmExpensePayload {
   flow: 'EXPENSE';
   actorId: number;
@@ -36,7 +21,6 @@ export interface ConfirmExpensePayload {
   splits: SplitEntry[];
   proofFileId: string;
   proofFileUniqueId: string;
-  isLlm?: boolean;
 }
 
 export interface ConfirmPaymentPayload {
@@ -52,17 +36,6 @@ export interface ConfirmPaymentPayload {
   description: string;
   proofFileId: string;
   proofFileUniqueId: string;
-  isLlm?: boolean;
-}
-
-export interface ConfirmKickPayload {
-  flow: 'KICK';
-  actorId: number;
-  householdId: string;
-  householdName: string;
-  memberId: number;
-  memberUsername: string | null;
-  memberFirstName: string;
 }
 
 export interface ConfirmBroadcastPayload {
@@ -89,9 +62,6 @@ export interface ConfirmIOwePayload {
 }
 
 export type ConfirmPayload =
-  | ConfirmExpensePayload
-  | ConfirmPaymentPayload
-  | ConfirmKickPayload
   | ConfirmBroadcastPayload
   | ConfirmIOwePayload;
 

@@ -10,7 +10,6 @@ export interface UsersTable {
   started_at: number;
   language: string | null;
   nickname: string | null;
-  mode: string | null;
   active_household_id: string | null;
   last_seen_version: string | null;
 }

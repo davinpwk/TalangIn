@@ -15,40 +15,25 @@ const en = {
     `Tap *🏠 Set Household* to get started.`,
   welcomeBack: `👋 Welcome back! Use the buttons below.`,
   whatsNew:
-    `🆕 *What's New in TalangIn*\n\n` +
-    `• 🔘 *Button Mode* — step\\-by\\-step wizards for all features\n` +
-    `• 🏠 *Create/Join household* — directly from the button menu\n` +
-    `• 👤 *Nicknames* — set a display name others will see\n` +
-    `• 🤝 *I Owe* — self\\-log debts you owe to others\n` +
-    `• 📦 *Item Tracker* — track shared household item usage\n` +
-    `• 📷 *Photo broadcasts* — send photos to your household\n` +
-    `• ❌ *Cancel buttons* — back out of any action anytime\n` +
-    `• ✅ *Split flexibility* — include or exclude yourself from expense splits`,
+    `🆕 *What's New in v1\\.2\\.0*\n\n` +
+    `• 🤖 *AI mode removed* — the bot is now fully button\\-driven for a more reliable experience\n` +
+    `• ⚙️ *Cleaner settings* — just nickname and language`,
   helpText:
     `🏠 *TalangIn — Household Debt Manager*\n\n` +
-    `Just talk to me naturally — no commands needed. I'll always ask you to confirm before doing anything.\n\n` +
-    `*🏡 Set up a household*\n` +
-    `• "Create a household called Kost Mawar"\n` +
-    `• "Join with code ABCD1234"\n\n` +
-    `*🧾 Split an expense*\n` +
-    `• "I paid 120 for dinner, split with alice and bob" — splits evenly between all three of you\n` +
-    `• "Split 200 to everyone" — splits with all household members\n` +
-    `• "Alice and bob each owe me 50 for groceries" — they each owe you that amount\n` +
-    `• "Paid 90 for drinks, alice pays 30 and bob pays 60" — custom split\n` +
-    `Attach your receipt as a photo or file when sending.\n\n` +
-    `*💸 Record a payment (paying someone back)*\n` +
-    `• "I paid alice 80" — partial repayment\n` +
-    `• "Paid bob full" / "Settled my debt with alice" — clears your full balance with them\n` +
-    `Attach your transfer proof as a photo or file.\n\n` +
-    `*📊 Check balances*\n` +
-    `• "What do I owe?" / "Show my balance" — your personal debt summary\n` +
-    `• "Show all debts in Kost Mawar" _(owner only)_ — see everyone's debts in a household\n\n` +
-    `*📢 Broadcast a message*\n` +
-    `• "Tell everyone dinner is ready"\n` +
-    `• "Announce: please pay your dues by Friday"\n\n` +
-    `*👥 Manage members*\n` +
-    `• "Kick alice from Kost Mawar" _(owner only)_\n\n` +
-    `Type *cancel* at any time to abort a pending action.`,
+    `Use the buttons on your keyboard to navigate all features\\.\n\n` +
+    `*🏡 Household*\n` +
+    `• Tap 🏠 to create or join a household\n\n` +
+    `*💸 Expenses & Payments*\n` +
+    `• 💸 *Log Expense* — split a bill among members\n` +
+    `• 💳 *Log Payment* — record paying someone back\n` +
+    `• 🤝 *I Owe* — self\\-log a debt you owe\n\n` +
+    `*📊 Balances*\n` +
+    `• 📊 *View Balances* — see who owes what\n\n` +
+    `*📢 More*\n` +
+    `• 📢 *Broadcast* — send a message to all members\n` +
+    `• 📦 *Item Tracker* — track shared household items\n` +
+    `• ⚙️ *Settings* — change your nickname or language\n\n` +
+    `Tap ❌ Cancel or type /cancel at any time to abort an action\\.`,
   cancel: '❌ Cancelled. What would you like to do?',
   notInHousehold: 'You are not in any household. Create or join one first.',
   notActiveMember: 'You are not an active member of that household.',
@@ -59,7 +44,7 @@ const en = {
     `Name: *{name}*\nCurrency: *{currency}*\n\n` +
     `Share this join code with your household members:\n` +
     `\`{joinCode}\`\n\n` +
-    `They can join by sending: \`join {joinCode}\``,
+    `They can tap *Join with Code* in the bot to join.`,
   joinRequestSent: `✅ Join request sent to *{householdName}*\\! Waiting for the owner to approve.`,
   joinInvalidCode: `❌ No household found with join code \`{code}\`. Double-check the code and try again.`,
   alreadyMember: `You are already a member of *{householdName}*.`,
@@ -158,43 +143,15 @@ const en = {
 
   // System
   rateLimited: '⏳ Slow down! You are sending messages too quickly.',
-  unknownIntent: "🤔 I didn't understand that. Type /help to see what I can do.",
-  llmSwitchTip: '\n\n💡 _Tip: Switch to Button Mode in /settings for a more reliable experience._',
   awaitingProofReminder:
-    '📎 I\'m waiting for your invoice/proof. Please send it as a photo or document.\n\nType "cancel" to abort.',
+    '📎 Please send your receipt or proof as a photo or document.\n\nTap ❌ Cancel or type /cancel to abort.',
   awaitingConfirmReminder: '👆 Please use the buttons above to confirm or cancel.',
-  awaitingHouseholdReminder:
-    '👆 Please select a household using the buttons above, or type "cancel" to abort.',
-  classifyError: 'Sorry, I had trouble understanding that. Please try again.',
   cancelledAction: '❌ Action cancelled.',
-  attachmentUnknown:
-    "I received your file, but I'm not sure what to do with it.\n\n" +
-    'If this is a receipt, please send it with a caption like:\n' +
-    '_"Dinner AUD 35, split with @alice and @bob"_\n\n' +
-    'Or send a text message first, then the proof.',
-  attachmentNoCaption:
-    "I received your file but couldn't determine its purpose from the caption. " +
-    'Please describe the expense or payment in your next message.',
-
-  // LLM disclaimer
-  llmReviewWarning: '\n\n🤖 _Interpreted by AI — review carefully before confirming._',
 
   // Nickname
   nicknamePrompt: '✏️ Type your new nickname (this is how others see you):',
   nicknameSet: '✅ Nickname set to *{nickname}*.',
 
-  // Mode switching
-  switchToLlmWarning:
-    `⚠️ *Switching to LLM (AI) Mode*\n\n` +
-    `In LLM mode, you interact via free text and the AI interprets your messages. ` +
-    `Results may occasionally be inaccurate.\n\n` +
-    `The reply keyboard will be hidden.`,
-  llmModeConfirmBtn: '✅ I understand, switch to LLM Mode',
-  llmModeBackBtn: '❌ Cancel',
-  modeChangedToLlm: '🤖 Switched to LLM Mode. Send a message to get started.',
-  modeChangedToButton: '🔘 Switched to Button Mode.',
-  alreadyButtonMode: 'You are already in Button Mode.',
-  alreadyLlmMode: 'You are already in LLM Mode.',
 
   // Household picker
   pickHousehold: '🏠 Which household would you like to use?',
@@ -206,6 +163,18 @@ const en = {
   joinHouseholdCodePrompt: '🔗 Enter the join code:',
   activeHouseholdSet: '✅ Now working in: *{name}*',
   changeHousehold: '🔄 Change Household',
+
+  // Household management menu
+  hhMenuHeader: '🏠 *{name}*\nWhat would you like to do?',
+  hhMenuAllDebts: '📋 All Debts',
+  hhMenuKick: '👢 Kick Member',
+  hhMenuJoinCode: '🔑 Join Code',
+  owes: 'owes',
+  hhJoinCodeDisplay: '🔑 *Join Code for {name}*\n\n`{joinCode}`\n\nShare this with anyone you want to invite.',
+  hhNoMembersToKick: 'There are no other members to remove.',
+  hhKickPickMember: '👢 Select a member to remove:',
+  hhKickConfirmPrompt: '⚠️ Remove *{member}* from *{householdName}*?\n\n_This cannot be undone._',
+  hhKickConfirmBtn: '✅ Yes, Remove',
 
   // I Owe
   iOweCreditorPrompt: '👤 Who do you owe? Select a member:',
@@ -257,11 +226,9 @@ const en = {
   noDebtToMember: 'You have no recorded debt to {name} in this household.',
 
   // Settings menu
-  settingsMenu: '⚙️ *Settings*\nNickname: *{nickname}*\nMode: *{mode}*\nLanguage: *{language}*',
+  settingsMenu: '⚙️ *Settings*\nNickname: *{nickname}*\nLanguage: *{language}*',
   settingsNicknameBtn: '✏️ Set Nickname',
   settingsLangBtn: '🌐 Change Language',
-  settingsSwitchLlmBtn: '🤖 Switch to LLM Mode',
-  settingsSwitchButtonBtn: '🔘 Switch to Button Mode',
   buttonModeUseButtons: '👇 Use the buttons below to navigate.',
   // Weekly summary
   weeklySummaryHeader: '📅 *Weekly Summary — {householdName}*\n',
@@ -296,40 +263,25 @@ const id: typeof en = {
     `Ketuk *🏠 Set Household* untuk mulai.`,
   welcomeBack: `👋 Selamat datang kembali! Gunakan tombol di bawah.`,
   whatsNew:
-    `🆕 *Yang Baru di TalangIn*\n\n` +
-    `• 🔘 *Mode Tombol* — panduan langkah demi langkah untuk semua fitur\n` +
-    `• 🏠 *Buat/Gabung rumah tangga* — langsung dari menu tombol\n` +
-    `• 👤 *Nama panggilan* — atur nama yang dilihat orang lain\n` +
-    `• 🤝 *I Owe* — catat sendiri utang yang kamu punya\n` +
-    `• 📦 *Pelacak Barang* — lacak penggunaan barang bersama\n` +
-    `• 📷 *Siaran foto* — kirim foto ke anggota rumah tangga\n` +
-    `• ❌ *Tombol batal* — batalkan aksi kapan saja\n` +
-    `• ✅ *Fleksibel split* — masukkan atau keluarkan dirimu dari pembagian`,
+    `🆕 *Yang Baru di v1\\.2\\.0*\n\n` +
+    `• 🤖 *Mode AI dihapus* — bot kini sepenuhnya berbasis tombol untuk pengalaman yang lebih andal\n` +
+    `• ⚙️ *Pengaturan lebih simpel* — hanya nama panggilan dan bahasa`,
   helpText:
     `🏠 *TalangIn — Manajemen Utang Rumah Tangga*\n\n` +
-    `Cukup ngobrol dengan aku secara alami — tidak perlu perintah khusus. Aku selalu minta konfirmasi sebelum melakukan apapun.\n\n` +
-    `*🏡 Buat rumah tangga*\n` +
-    `• "Buat rumah tangga bernama Kost Mawar"\n` +
-    `• "Bergabung dengan kode ABCD1234"\n\n` +
-    `*🧾 Bagi pengeluaran*\n` +
-    `• "Saya bayar 120 untuk makan malam, bagi dengan alice dan bob" — dibagi rata termasuk kamu\n` +
-    `• "Bagi 200 ke semua" — dibagi ke seluruh anggota\n` +
-    `• "Alice dan bob masing-masing berutang 50 ke saya untuk sembako" — mereka masing-masing berutang segitu\n` +
-    `• "Bayar 90 untuk minuman, alice bayar 30 dan bob bayar 60" — bagi kustom\n` +
-    `Lampirkan struk sebagai foto atau file saat mengirim.\n\n` +
-    `*💸 Catat pembayaran (membayar utang)*\n` +
-    `• "Saya bayar alice 80" — pembayaran sebagian\n` +
-    `• "Bayar bob full" / "Lunasi utang ke alice" — melunasi semua utangmu ke mereka\n` +
-    `Lampirkan bukti transfer sebagai foto atau file.\n\n` +
-    `*📊 Cek saldo*\n` +
-    `• "Apa yang aku berutang?" / "Tunjukkan saldoku" — ringkasan utangmu\n` +
-    `• "Tampilkan semua utang di Kost Mawar" _(hanya pemilik)_ — lihat utang semua anggota\n\n` +
-    `*📢 Siaran pesan*\n` +
-    `• "Beritahu semua orang bahwa makan malam sudah siap"\n` +
-    `• "Umumkan: harap bayar iuran sebelum Jumat"\n\n` +
-    `*👥 Kelola anggota*\n` +
-    `• "Keluarkan alice dari Kost Mawar" _(hanya pemilik)_\n\n` +
-    `Ketik *cancel* kapan saja untuk membatalkan tindakan yang sedang menunggu.`,
+    `Gunakan tombol di keyboard untuk mengakses semua fitur\\.\n\n` +
+    `*🏡 Rumah Tangga*\n` +
+    `• Ketuk 🏠 untuk membuat atau bergabung ke rumah tangga\n\n` +
+    `*💸 Pengeluaran & Pembayaran*\n` +
+    `• 💸 *Log Expense* — bagi tagihan ke anggota\n` +
+    `• 💳 *Log Payment* — catat pembayaran utang\n` +
+    `• 🤝 *I Owe* — catat sendiri utang yang kamu punya\n\n` +
+    `*📊 Saldo*\n` +
+    `• 📊 *View Balances* — lihat siapa berutang ke siapa\n\n` +
+    `*📢 Lainnya*\n` +
+    `• 📢 *Broadcast* — kirim pesan ke semua anggota\n` +
+    `• 📦 *Item Tracker* — lacak penggunaan barang bersama\n` +
+    `• ⚙️ *Settings* — ubah nama panggilan atau bahasa\n\n` +
+    `Ketuk ❌ Cancel atau ketik /cancel kapan saja untuk membatalkan aksi\\.`,
   cancel: '❌ Dibatalkan. Mau ngapain sekarang?',
   notInHousehold: 'Kamu belum bergabung ke rumah tangga manapun. Buat atau bergabung dulu.',
   notActiveMember: 'Kamu bukan anggota aktif rumah tangga tersebut.',
@@ -340,7 +292,7 @@ const id: typeof en = {
     `Nama: *{name}*\nMata uang: *{currency}*\n\n` +
     `Bagikan kode ini ke anggota rumah tanggamu:\n` +
     `\`{joinCode}\`\n\n` +
-    `Mereka bisa bergabung dengan mengirim: \`join {joinCode}\``,
+    `Mereka bisa ketuk *Join with Code* di bot untuk bergabung.`,
   joinRequestSent: `✅ Permintaan bergabung ke *{householdName}* sudah terkirim\\! Tunggu pemilik untuk menyetujui.`,
   joinInvalidCode: `❌ Tidak ada rumah tangga dengan kode \`{code}\`. Periksa kembali kode dan coba lagi.`,
   alreadyMember: `Kamu sudah menjadi anggota *{householdName}*.`,
@@ -440,43 +392,15 @@ const id: typeof en = {
 
   // System
   rateLimited: '⏳ Pelan-pelan! Kamu mengirim pesan terlalu cepat.',
-  unknownIntent: '🤔 Aku tidak mengerti itu. Ketik /help untuk melihat yang bisa aku lakukan.',
-  llmSwitchTip: '\n\n💡 _Tips: Ganti ke Mode Tombol di /settings untuk pengalaman yang lebih andal._',
   awaitingProofReminder:
-    '📎 Aku sedang menunggu faktur/buktimu. Kirimkan sebagai foto atau dokumen.\n\nKetik "cancel" untuk membatalkan.',
+    '📎 Kirimkan struk atau buktimu sebagai foto atau dokumen.\n\nKetuk ❌ Cancel atau ketik /cancel untuk membatalkan.',
   awaitingConfirmReminder: '👆 Gunakan tombol di atas untuk mengkonfirmasi atau membatalkan.',
-  awaitingHouseholdReminder:
-    '👆 Pilih rumah tangga menggunakan tombol di atas, atau ketik "cancel" untuk membatalkan.',
-  classifyError: 'Maaf, aku kesulitan memahami itu. Coba lagi.',
   cancelledAction: '❌ Tindakan dibatalkan.',
-  attachmentUnknown:
-    'Aku menerima file kamu, tapi tidak tahu harus diapakan.\n\n' +
-    'Kalau ini struk, kirim dengan caption seperti:\n' +
-    '_"Makan malam 35.000, bagi dengan @alice dan @bob"_\n\n' +
-    'Atau kirim pesan teks dulu, baru buktinya.',
-  attachmentNoCaption:
-    'Aku menerima file kamu tapi tidak bisa menentukan tujuannya dari caption. ' +
-    'Tolong jelaskan pengeluaran atau pembayarannya di pesan berikutnya.',
-
-  // LLM disclaimer
-  llmReviewWarning: '\n\n🤖 _Ditafsirkan oleh AI — periksa dengan teliti sebelum mengkonfirmasi._',
 
   // Nickname
   nicknamePrompt: '✏️ Ketik nama panggilan baru kamu (begini orang lain melihat kamu):',
   nicknameSet: '✅ Nama panggilan diatur ke *{nickname}*.',
 
-  // Mode switching
-  switchToLlmWarning:
-    `⚠️ *Beralih ke Mode LLM (AI)*\n\n` +
-    `Dalam mode LLM, kamu berinteraksi melalui teks bebas dan AI menafsirkan pesanmu. ` +
-    `Hasilnya terkadang mungkin tidak akurat.\n\n` +
-    `Keyboard tombol akan disembunyikan.`,
-  llmModeConfirmBtn: '✅ Saya mengerti, beralih ke Mode LLM',
-  llmModeBackBtn: '❌ Batal',
-  modeChangedToLlm: '🤖 Beralih ke Mode LLM. Kirim pesan untuk mulai.',
-  modeChangedToButton: '🔘 Beralih ke Mode Tombol.',
-  alreadyButtonMode: 'Kamu sudah dalam Mode Tombol.',
-  alreadyLlmMode: 'Kamu sudah dalam Mode LLM.',
 
   // Household picker
   pickHousehold: '🏠 Rumah tangga mana yang ingin kamu gunakan?',
@@ -488,6 +412,18 @@ const id: typeof en = {
   joinHouseholdCodePrompt: '🔗 Masukkan kode bergabung:',
   activeHouseholdSet: '✅ Sekarang menggunakan: *{name}*',
   changeHousehold: '🔄 Ganti Rumah Tangga',
+
+  // Household management menu
+  hhMenuHeader: '🏠 *{name}*\nMau ngapain?',
+  hhMenuAllDebts: '📋 Semua Utang',
+  hhMenuKick: '👢 Keluarkan Anggota',
+  hhMenuJoinCode: '🔑 Kode Bergabung',
+  owes: 'berutang',
+  hhJoinCodeDisplay: '🔑 *Kode Bergabung untuk {name}*\n\n`{joinCode}`\n\nBagikan ini ke siapa pun yang ingin kamu undang.',
+  hhNoMembersToKick: 'Tidak ada anggota lain yang bisa dikeluarkan.',
+  hhKickPickMember: '👢 Pilih anggota yang ingin dikeluarkan:',
+  hhKickConfirmPrompt: '⚠️ Keluarkan *{member}* dari *{householdName}*?\n\n_Ini tidak bisa dibatalkan._',
+  hhKickConfirmBtn: '✅ Ya, Keluarkan',
 
   // I Owe
   iOweCreditorPrompt: '👤 Kamu berutang ke siapa? Pilih anggota:',
@@ -539,11 +475,9 @@ const id: typeof en = {
   noDebtToMember: 'Kamu tidak punya utang ke {name} di rumah tangga ini.',
 
   // Settings menu
-  settingsMenu: '⚙️ *Pengaturan*\nNama panggilan: *{nickname}*\nMode: *{mode}*\nBahasa: *{language}*',
+  settingsMenu: '⚙️ *Pengaturan*\nNama panggilan: *{nickname}*\nBahasa: *{language}*',
   settingsNicknameBtn: '✏️ Atur Nama Panggilan',
   settingsLangBtn: '🌐 Ganti Bahasa',
-  settingsSwitchLlmBtn: '🤖 Beralih ke Mode LLM',
-  settingsSwitchButtonBtn: '🔘 Beralih ke Mode Tombol',
   buttonModeUseButtons: '👇 Gunakan tombol di bawah untuk navigasi.',
   // Weekly summary
   weeklySummaryHeader: '📅 *Ringkasan Mingguan — {householdName}*\n',

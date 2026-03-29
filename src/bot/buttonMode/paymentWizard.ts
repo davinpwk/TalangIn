@@ -182,7 +182,6 @@ async function showPaymentPreview(
     amountCents: payload.amountCents!,
     currency: payload.currency,
     description: 'Payment',
-    isLlm: false,
   };
 
   const bmProofPayload: BmAwaitingProofPayload = {

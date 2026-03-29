@@ -4,19 +4,17 @@ import { householdRepo } from '../db/repos/householdRepo';
 import { userRepo } from '../db/repos/userRepo';
 import { joinRequestKeyboard } from '../bot/keyboards/joinKeyboard';
 import { notifyUser } from '../utils/notify';
-import { logger } from '../utils/logger';
 import { escapeMd } from '../domain/money';
 import { t, getLang } from '../i18n';
-import type { JoinHouseholdIntent } from '../llm/schemas';
 
-export async function handle(ctx: Context, intent: JoinHouseholdIntent, bot: Telegraf): Promise<void> {
+export async function handleJoinByCode(ctx: Context, code: string, bot: Telegraf): Promise<void> {
   const telegramId = ctx.from!.id;
   const lang = getLang(ctx);
-  const code = intent.join_code.toUpperCase();
+  const upperCode = code.toUpperCase();
 
-  const household = await householdRepo.getByJoinCode(code);
+  const household = await householdRepo.getByJoinCode(upperCode);
   if (!household) {
-    await ctx.reply(t(lang, 'joinInvalidCode', { code }), { parse_mode: 'Markdown' });
+    await ctx.reply(t(lang, 'joinInvalidCode', { code: upperCode }), { parse_mode: 'Markdown' });
     return;
   }
 
@@ -49,14 +47,12 @@ export async function handle(ctx: Context, intent: JoinHouseholdIntent, bot: Tel
     { parse_mode: 'Markdown' }
   );
 
-  // Notify owner
   const requester = await userRepo.getById(telegramId);
   const requesterRef = escapeMd(
     requester?.username ? `@${requester.username}` : requester?.first_name ?? `user ${telegramId}`
   );
   const householdName = escapeMd(household.name);
 
-  // Owner's language
   const owner = await userRepo.getById(household.owner_telegram_id);
   const ownerLang = (owner?.language as import('../i18n').Lang | null) ?? null;
 
@@ -70,8 +66,7 @@ export async function handle(ctx: Context, intent: JoinHouseholdIntent, bot: Tel
       parse_mode: 'Markdown',
       reply_markup: joinRequestKeyboard(requestId),
     });
-  } catch (err) {
-    logger.warn({ err, ownerId: household.owner_telegram_id }, 'Could not notify owner of join request');
+  } catch {
     await ctx.reply(t(lang, 'ownerNotNotified'));
   }
 }
@@ -119,7 +114,6 @@ async function _decideRequest(
     ? `@${requester.username}`
     : requester?.first_name ?? String(request.requester_telegram_id);
 
-  // Requester's language for notifications
   const requesterLang = (requester?.language as import('../i18n').Lang | null) ?? null;
   const householdName = escapeMd(household.name);
 
@@ -150,3 +144,4 @@ async function _decideRequest(
     );
   }
 }
+

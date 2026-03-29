@@ -19,7 +19,6 @@ export const userRepo = {
         last_name: data.lastName,
         started_at: now,
         nickname: null,
-        mode: 'button',
         active_household_id: null,
       })
       .onConflict((oc) =>
@@ -27,7 +26,7 @@ export const userRepo = {
           username: data.username,
           first_name: data.firstName,
           last_name: data.lastName,
-          // NOTE: do NOT overwrite nickname, mode, active_household_id, language
+          // NOTE: do NOT overwrite nickname, active_household_id, language
         })
       )
       .execute();
@@ -61,14 +60,6 @@ export const userRepo = {
     await db
       .updateTable('users')
       .set({ nickname })
-      .where('telegram_id', '=', telegramId)
-      .execute();
-  },
-
-  async setMode(telegramId: number, mode: 'llm' | 'button'): Promise<void> {
-    await db
-      .updateTable('users')
-      .set({ mode })
       .where('telegram_id', '=', telegramId)
       .execute();
   },

@@ -13,10 +13,6 @@ function optional(key: string, defaultValue: string): string {
 
 export const config = {
   telegramBotToken: required('TELEGRAM_BOT_TOKEN'),
-  llmProvider: optional('LLM_PROVIDER', 'openai') as 'openai',
-  openaiApiKey: required('OPENAI_API_KEY'),
-  openaiModel: optional('OPENAI_MODEL', 'gpt-4o-mini'),
-  llmTemperature: parseFloat(optional('LLM_TEMPERATURE', '0')),
   dbPath: optional('DB_PATH', './data/db.sqlite'),
   nodeEnv: optional('NODE_ENV', 'development'),
   logLevel: optional('LOG_LEVEL', 'info'),
